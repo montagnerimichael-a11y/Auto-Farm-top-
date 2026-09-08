@@ -102,7 +102,7 @@ end
 -- ===== FUNÇÃO PARA USAR HABILIDADES LAVA =====
 local function usarHabilidadesLava()
     local agora = tick()
-    
+
     -- VULCÃO (Q) - Só se estiver carregado e cooldown acabou
     if cargaVulcao >= cargaMaxima and agora - ultimoUsoVulcao > tempoCooldownVulcao then
         pcall(function()
@@ -115,7 +115,7 @@ local function usarHabilidadesLava()
         end)
         return
     end
-    
+
     -- EXPLOSÃO DE LAVA - 12s cooldown
     if agora - ultimoUsoExplosao > tempoCooldownExplosao then
         pcall(function()
@@ -127,7 +127,7 @@ local function usarHabilidadesLava()
         end)
         return
     end
-    
+
     -- FORMA DE LAVA - 17s cooldown
     if agora - ultimoUsoForma > tempoCooldownForma then
         pcall(function()
@@ -388,7 +388,7 @@ gui.Parent = player.PlayerGui
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 280, 0, 450) -- Aumentado para caber o Lava Kill
+frame.Size = UDim2.new(0, 280, 0, 450)
 frame.Position = UDim2.new(0.5, -140, 0.5, -225)
 frame.BackgroundColor3 = Color3.fromRGB(20, 20, 35)
 frame.BackgroundTransparency = 0.1
@@ -405,7 +405,7 @@ corner.Parent = frame
 local header = Instance.new("Frame")
 header.Size = UDim2.new(1, 0, 0, 35)
 header.Position = UDim2.new(0, 0, 0, 0)
-header.BackgroundColor3 = Color3.fromRGB(30, 30, 60) -- Cor escura combinando
+header.BackgroundColor3 = Color3.fromRGB(30, 30, 60)
 header.BackgroundTransparency = 0.1
 header.BorderSizePixel = 0
 header.Parent = frame
@@ -420,7 +420,7 @@ titulo.Size = UDim2.new(1, -70, 1, 0)
 titulo.Position = UDim2.new(0, 8, 0, 0)
 titulo.BackgroundTransparency = 1
 titulo.Text = "⚡ MCRM v1.4.0"
-titulo.TextColor3 = Color3.fromRGB(0, 200, 255) -- Azul claro
+titulo.TextColor3 = Color3.fromRGB(0, 200, 255)
 titulo.TextSize = 13
 titulo.Font = Enum.Font.GothamBold
 titulo.TextXAlignment = Enum.TextXAlignment.Left
@@ -437,7 +437,6 @@ statusVivo.Font = Enum.Font.GothamBold
 statusVivo.TextXAlignment = Enum.TextXAlignment.Right
 statusVivo.Parent = header
 
--- Botão Minimizar (mais visível)
 local minBtn = Instance.new("TextButton")
 minBtn.Size = UDim2.new(0, 22, 0, 22)
 minBtn.Position = UDim2.new(1, -50, 0, 6)
@@ -454,7 +453,6 @@ local minCorner = Instance.new("UICorner")
 minCorner.CornerRadius = UDim.new(0, 5)
 minCorner.Parent = minBtn
 
--- Botão Fechar (mais visível)
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0, 22, 0, 22)
 closeBtn.Position = UDim2.new(1, -26, 0, 6)
@@ -601,8 +599,7 @@ btnVelocidadeMais.Parent = secaoVelocidade
 
 local btnVelocidadeMaisCorner = Instance.new("UICorner")
 btnVelocidadeMaisCorner.CornerRadius = UDim.new(0, 6)
-btnVelocidadeMaisCorner.Parent
- = btnVelocidadeMais
+btnVelocidadeMaisCorner.Parent = btnVelocidadeMais
 
 local btnResetVelocidade = Instance.new("TextButton")
 btnResetVelocidade.Size = UDim2.new(0, 70, 0, 26)
@@ -619,7 +616,6 @@ btnResetVelocidade.Parent = secaoVelocidade
 local btnResetCorner = Instance.new("UICorner")
 btnResetCorner.CornerRadius = UDim.new(0, 6)
 btnResetCorner.Parent = btnResetVelocidade
-
 -- ============================================
 -- SEÇÃO: OTIMIZAÇÃO GRÁFICA
 -- ============================================
@@ -661,7 +657,6 @@ btnOtimizar.Parent = secao0
 local btnOtimizarCorner = Instance.new("UICorner")
 btnOtimizarCorner.CornerRadius = UDim.new(0, 6)
 btnOtimizarCorner.Parent = btnOtimizar
-
 local btnExtremo = Instance.new("TextButton")
 btnExtremo.Size = UDim2.new(0, 120, 0, 24)
 btnExtremo.Position = UDim2.new(0, 130, 0, 18)
@@ -688,7 +683,6 @@ statusOtimizacao.TextSize = 9
 statusOtimizacao.Font = Enum.Font.Gotham
 statusOtimizacao.TextXAlignment = Enum.TextXAlignment.Center
 statusOtimizacao.Parent = secao0
-
 -- ============================================
 -- SEÇÃO 1: COLETA
 -- ============================================
@@ -741,7 +735,6 @@ statusColeta.TextSize = 9
 statusColeta.Font = Enum.Font.Gotham
 statusColeta.TextXAlignment = Enum.TextXAlignment.Left
 statusColeta.Parent = secao1
-
 -- Raio
 local raioFrame = Instance.new("Frame")
 raioFrame.Size = UDim2.new(1, 0, 0, 18)
@@ -793,7 +786,6 @@ raioMais.TextSize = 9
 raioMais.Font = Enum.Font.GothamBold
 raioMais.BorderSizePixel = 0
 raioMais.Parent = raioFrame
-
 -- ============================================
 -- SEÇÃO 2: AUTO KILL NORMAL
 -- ============================================
@@ -846,7 +838,6 @@ statusKill.TextSize = 9
 statusKill.Font = Enum.Font.Gotham
 statusKill.TextXAlignment = Enum.TextXAlignment.Left
 statusKill.Parent = secao2
-
 local modoAgressivo = false
 local btnModo = Instance.new("TextButton")
 btnModo.Size = UDim2.new(0, 110, 0, 18)
@@ -916,7 +907,6 @@ statusKillLava.TextSize = 9
 statusKillLava.Font = Enum.Font.Gotham
 statusKillLava.TextXAlignment = Enum.TextXAlignment.Left
 statusKillLava.Parent = secaoLava
-
 -- Contador Vulcão
 local vulcaoLabel = Instance.new("TextLabel")
 vulcaoLabel.Size = UDim2.new(1, 0, 0, 14)
@@ -952,7 +942,6 @@ killsLavaLabel.TextSize = 9
 killsLavaLabel.Font = Enum.Font.GothamBold
 killsLavaLabel.TextXAlignment = Enum.TextXAlignment.Center
 killsLavaLabel.Parent = secaoLava
-
 -- ============================================
 -- SEÇÃO 4: ORBES
 -- ============================================
@@ -1005,7 +994,6 @@ statusOrbes.TextSize = 9
 statusOrbes.Font = Enum.Font.Gotham
 statusOrbes.TextXAlignment = Enum.TextXAlignment.Left
 statusOrbes.Parent = secao3
-
 -- ============================================
 -- CONTADORES E INFO
 -- ============================================
@@ -1064,7 +1052,6 @@ performance.TextSize = 8
 performance.Font = Enum.Font.Gotham
 performance.TextXAlignment = Enum.TextXAlignment.Center
 performance.Parent = content
-
 -- ============================================
 -- FUNÇÕES
 -- ============================================
@@ -1618,610 +1605,39 @@ function alternarOrbes()
     end
 end
 
--- ===== ANTI-AFK =====
+-- ===== SISTEMA ANTI-AFK CORRIGIDO =====
 
-local function alternarAntiAFK()
-    antiAFKAtivo = not antiAFKAtivo
-
-    if antiAFKAtivo then
-        btnAntiAFK.Text = "🛡️ ANTI-AFK: ON"
-        btnAntiAFK.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
-        statusAntiAFK.Text = "🟢 Ativo"
-        statusAntiAFK.TextColor3 = Color3.fromRGB(0, 255, 100)
-
-        if loopAntiAFK then loopAntiAFK:Disconnect() end
-        loopAntiAFK = RunService.Heartbeat:Connect(function()
-            if tick() - ultimoMovimento > math.random(30, 60) then
-                antiAFKFunc()
-                ultimoMovimento = tick()
-            end
-        end)
-
-        antiAFKFunc()
-        ultimoMovimento = tick()
-
-        print("🛡️ Anti-AFK ATIVADO!")
-    else
-        btnAntiAFK.Text = "🛡️ ANTI-AFK: OFF"
-        btnAntiAFK.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-        statusAntiAFK.Text = "🔴 Inativo"
-        statusAntiAFK.TextColor3 = Color3.fromRGB(255, 100, 100)
-
-        if loopAntiAFK then
-            loopAntiAFK:Disconnect()
-            loopAntiAFK = nil
-        end
-        print("🛡️ Anti-AFK DESATIVADO!")
-    end
-end
-
--- ============================================
--- EVENTOS
--- ============================================
-
-btnColeta.MouseButton1Click:Connect(alternarColeta)
-btnKill.MouseButton1Click:Connect(alternarKill)
-btnKillLava.MouseButton1Click:Connect(alternarKillLava)
-btnOrbes.MouseButton1Click:Connect(alternarOrbes)
-
-btnAntiAFK.MouseButton1Click:Connect(function()
-    print("🖱️ Botão Anti-AFK clicado!")
-    alternarAntiAFK()
-end)
-
-btnOtimizar.MouseButton1Click:Connect(function()
-    otimizarGraficos()
-    if otimizacaoAtiva then
-        btnOtimizar.Text = "🔄 RESTAURAR"
-        btnOtimizar.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
-        statusOtimizacao.Text = "🟡 Gráficos Otimizados"
-        statusOtimizacao.TextColor3 = Color3.fromRGB(255, 200, 0)
-    else
-        btnOtimizar.Text = "🎨 OTIMIZAR"
-        btnOtimizar.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
-        statusOtimizacao.Text = "🟢 Gráficos Normais"
-        statusOtimizacao.TextColor3 = Color3.fromRGB(0, 255, 100)
-    end
-end)
-
-btnExtremo.MouseButton1Click:Connect(function()
-    otimizarExtremo()
-    statusOtimizacao.Text = "🔥 Modo Extremo!"
-    statusOtimizacao.TextColor3 = Color3.fromRGB(255, 50, 0)
-    btnOtimizar.Text = "🔄 RESTAURAR"
-    btnOtimizar.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
-    otimizacaoAtiva = true
-end)
-
-btnVelocidadeMais.MouseButton1Click:Connect(aumentarVelocidade)
-btnVelocidadeMenos.MouseButton1Click:Connect(diminuirVelocidade)
-btnResetVelocidade.MouseButton1Click:Connect(resetarVelocidade)
-
-btnModo.MouseButton1Click:Connect(function()
-    modoAgressivo = not modoAgressivo
-    if modoAgressivo then
-        btnModo.Text = "🎯 MODO: AGRESSIVO"
-        btnModo.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-    else
-        btnModo.Text = "🎯 MODO: NORMAL"
-        btnModo.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    end
-end)
-
-raioMais.MouseButton1Click:Connect(function()
-    if raio < 300 then
-        raio = raio + 10
-        raioLab.Text = "📏 " .. raio
-        raioValor.Text = raio
-    end
-end)
-
-raioMenos.MouseButton1Click:Connect(function()
-    if raio > 30 then
-        raio = raio - 10
-        raioLab.Text = "📏 " .. raio
-        raioValor.Text = raio
-    end
-end)
-
-minBtn.MouseButton1Click:Connect(function()
-    minimizado = not minimizado
-    if minimizado then
-        frame.Size = UDim2.new(0, 280, 0, 35)
-        scrollFrame.Visible = false
-        minBtn.Text = "□"
-        minBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
-    else
-        frame.Size = UDim2.new(0, 280, 0, 450)
-        scrollFrame.Visible = true
-        minBtn.Text = "─"
-        minBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 120)
-    end
-end)
-
-closeBtn.MouseButton1Click:Connect(function()
-    coletando = false
-    matando = false
-    matandoLava = false
-    coletandoOrbes = false
-    antiAFKAtivo = false
-    if loopColeta then loopColeta:Disconnect() end
-    if loopKill then loopKill:Disconnect() end
-    if loopKillLava then loopKillLava:Disconnect() end
-    if loopOrbes then loopOrbes:Disconnect() end
-    if loopAntiAFK then loopAntiAFK:Disconnect() end
-    if loopVelocidade then loopVelocidade:Disconnect() end
-    if otimizacaoAtiva then otimizarGraficos() end
-    gui:Destroy()
-    print("✅ MCRM HUB v1.4.0 finalizado!")
-end)
-
--- ============================================
--- RESPAWN
--- ============================================
-
-player.CharacterAdded:Connect(function(novoChar)
-    character = novoChar
-    rootPart = character:WaitForChild("HumanoidRootPart")
-    humanoid = character:WaitForChild("Humanoid")
-    wait(2)
-    acharEspada()
-    acharEspadaLava()
-
-    if velocidadeAtual > 16 then
-        definirVelocidade(velocidadeAtual)
-        print("🏃 Velocidade restaurada: " .. velocidadeAtual)
-    end
-
-    if antiAFKAtivo then
-        if loopAntiAFK then loopAntiAFK:Disconnect() end
-        loopAntiAFK = RunService.Heartbeat:Connect(function()
-            if tick() - ultimoMovimento > math.random(30, 60) then
-                antiAFKFunc()
-                ultimoMovimento = tick()
-            end
-        end)
-    end
-
-    if matando then
-        matando = false
-        btnKill.Text = "⚔️ ATIVAR"
-        btnKill.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-        statusKill.Text = "💀 MORTO"
-        statusKill.TextColor3 = Color3.fromRGB(255, 100, 100)
-        alvoText.Text = "🎯 Morto"
-        alvoText.TextColor3 = Color3.fromRGB(200, 50, 50)
-        if loopKill then
-            loopKill:Disconnect()
-            loopKill = nil
-        end
-        print("💀 Auto Kill desligado (personagem morreu)!")
-        return
-    end
-
-    if not espada or not espada.Parent then
-        espada = acharEspada("sword")
-        if not espada then
-            statusKill.Text = "⚠️ Sem espada!"
-            statusKill.TextColor3 = Color3.fromRGB(255, 200, 0)
-            wait(2)
-            return
-        end
-    end
-
-    if not alvo or not alvo.Character or alvo.Character.Humanoid.Health <= 0 then
-        alvo = acharAlvo()
-        if alvo then
-            alvoText.Text = "🎯 " .. alvo.Name
-            alvoText.TextColor3 = Color3.fromRGB(255, 50, 50)
-        else
-            alvoText.Text = "🎯 Nenhum"
-            alvoText.TextColor3 = Color3.fromRGB(200, 200, 200)
-            statusKill.Text = "🔍 Procurando..."
-            statusKill.TextColor3 = Color3.fromRGB(255, 200, 0)
-            wait(1)
-            return
-        end
-    end
-
-    if alvo and alvo.Character and alvo.Character.Humanoid.Health > 0 then
-        local hrp = alvo.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            local posAlvo = hrp.Position
-            local posJogador = rootPart.Position
-            local dist = (posAlvo - posJogador).Magnitude
-
-            local cf = hrp.CFrame
-            local costas = cf.LookVector * -1
-            local posCostas = posAlvo + (costas * 2.5)
-
-            if modoAgressivo then
-                if dist > 20 then
-                    local dir = (posAlvo - posJogador).Unit
-                    rootPart.CFrame = rootPart.CFrame + (dir * 15)
-                    statusKill.Text = "🏃 Correndo..."
-                    statusKill.TextColor3 = Color3.fromRGB(255, 200, 0)
-                    return
-                end
-
-                if dist > 3 then
-                    local dir = (posAlvo - posJogador).Unit
-                    rootPart.CFrame = rootPart.CFrame + (dir * 8)
-                    statusKill.Text = "⚡ Investida..."
-                    statusKill.TextColor3 = Color3.fromRGB(255, 150, 0)
-                    return
-                end
-            else
-                if dist > 20 then
-                    local dir = (posAlvo - posJogador).Unit
-                    rootPart.CFrame = rootPart.CFrame + (dir * 10)
-                    statusKill.Text = "🏃 Correndo..."
-                    statusKill.TextColor3 = Color3.fromRGB(255, 200, 0)
-                    return
-                end
-
-                if dist > 4 then
-                    local dirCostas = (posCostas - posJogador).Unit
-                    rootPart.CFrame = rootPart.CFrame + (dirCostas * 5)
-                    statusKill.Text = "🎯 Flanqueando..."
-                    statusKill.TextColor3 = Color3.fromRGB(255, 200, 0)
-                    return
-                end
-            end
-
-            local olhar = CFrame.lookAt(rootPart.Position, posAlvo)
-            rootPart.CFrame = CFrame.new(rootPart.Position, olhar.LookVector + rootPart.Position)
-
-            pcall(function()
-                espada:Activate()
-                wait(0.05)
-                espada:Activate()
-                usarPoderes()
-            end)
-
-            kills = kills + 1
-            contador.Text = "💎"..diamantes.."  ⚔️"..kills.."  ⚪"..orbes
-            statusKill.Text = "⚔️ ATACANDO!"
-            statusKill.TextColor3 = Color3.fromRGB(255, 0, 0)
-            alvoText.Text = "🎯 " .. alvo.Name .. " 💀"
-            alvoText.TextColor3 = Color3.fromRGB(255, 0, 0)
-        end
-    end
-end
-
-function alternarKill()
-    if not vivo() then
-        statusKill.Text = "⚠️ Morto!"
-        statusKill.TextColor3 = Color3.fromRGB(255, 200, 0)
-        wait(1)
-        statusKill.Text = "🔴 OFF"
-        statusKill.TextColor3 = Color3.fromRGB(255, 100, 100)
-        return
-    end
-
-    matando = not matando
-
-    if matando then
-        espada = acharEspada("sword")
-        if not espada then
-            statusKill.Text = "⚠️ Sem espada!"
-            statusKill.TextColor3 = Color3.fromRGB(255, 200, 0)
-            matando = false
-            btnKill.Text = "⚔️ ATIVAR"
-            btnKill.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-            wait(2)
-            statusKill.Text = "🔴 OFF"
-            statusKill.TextColor3 = Color3.fromRGB(255, 100, 100)
-            return
-        end
-
-        btnKill.Text = "⏹ PARAR"
-        btnKill.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-        statusKill.Text = "🟢 ON"
-        statusKill.TextColor3 = Color3.fromRGB(0, 255, 100)
-
-        if loopKill then loopKill:Disconnect() end
-        loopKill = RunService.Heartbeat:Connect(function()
-            if matando then
-                loopKillFunc()
-                wait(0.05)
-            end
-        end)
-    else
-        btnKill.Text = "⚔️ ATIVAR"
-        btnKill.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-        statusKill.Text = "🔴 OFF"
-        statusKill.TextColor3 = Color3.fromRGB(255, 100, 100)
-        alvo = nil
-        alvoText.Text = "🎯 Nenhum"
-        alvoText.TextColor3 = Color3.fromRGB(200, 200, 200)
-
-        if loopKill then
-            loopKill:Disconnect()
-            loopKill = nil
-        end
-    end
-end
-
--- ===== KILL LAVA =====
-
-function loopKillLavaFunc()
-    if not matandoLava then return end
-
-    if not vivo() then
-        matandoLava = false
-        btnKillLava.Text = "🌋 ATIVAR LAVA"
-        btnKillLava.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
-        statusKillLava.Text = "💀 MORTO"
-        statusKillLava.TextColor3 = Color3.fromRGB(255, 100, 100)
-        alvoLavaText.Text = "🌋 Alvo Lava: Morto"
-        alvoLavaText.TextColor3 = Color3.fromRGB(200, 50, 50)
-        if loopKillLava then
-            loopKillLava:Disconnect()
-            loopKillLava = nil
-        end
-        print("💀 Auto Kill Lava desligado (personagem morreu)!")
-        return
-    end
-
-    if not espadaLava or not espadaLava.Parent then
-        acharEspadaLava()
-        if not espadaLava then
-            statusKillLava.Text = "⚠️ Sem Espada Lava!"
-            statusKillLava.TextColor3 = Color3.fromRGB(255, 200, 0)
-            wait(2)
-            return
-        end
-    end
-
-    if not alvoLava or not alvoLava.Character or alvoLava.Character.Humanoid.Health <= 0 then
-        alvoLava = acharAlvo()
-        if alvoLava then
-            alvoLavaText.Text = "🌋 Alvo Lava: " .. alvoLava.Name
-            alvoLavaText.TextColor3 = Color3.fromRGB(255, 150, 0)
-        else
-            alvoLavaText.Text = "🌋 Alvo Lava: Nenhum"
-            alvoLavaText.TextColor3 = Color3.fromRGB(200, 200, 200)
-            statusKillLava.Text = "🔍 Procurando..."
-            statusKillLava.TextColor3 = Color3.fromRGB(255, 200, 0)
-            wait(1)
-            return
-        end
-    end
-
-    if alvoLava and alvoLava.Character and alvoLava.Character.Humanoid.Health > 0 then
-        local hrp = alvoLava.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            local posAlvo = hrp.Position
-            local posJogador = rootPart.Position
-            local dist = (posAlvo - posJogador).Magnitude
-
-            local cf = hrp.CFrame
-            local costas = cf.LookVector * -1
-            local posCostas = posAlvo + (costas * 2.5)
-
-            -- Movimento e ataque igual ao Kill normal
-            if dist > 20 then
-                local dir = (posAlvo - posJogador).Unit
-                rootPart.CFrame = rootPart.CFrame + (dir * 10)
-                statusKillLava.Text = "🏃 Correndo (Lava)..."
-                statusKillLava.TextColor3 = Color3.fromRGB(255, 200, 0)
-                return
-            end
-
-            if dist > 4 then
-                local dirCostas = (posCostas - posJogador).Unit
-                rootPart.CFrame = rootPart.CFrame + (dirCostas * 5)
-                statusKillLava.Text = "🎯 Flanqueando (Lava)..."
-                statusKillLava.TextColor3 = Color3.fromRGB(255, 200, 0)
-                return
-            end
-
-            local olhar = CFrame.lookAt(rootPart.Position, posAlvo)
-            rootPart.CFrame = CFrame.new(rootPart.Position, olhar.LookVector + rootPart.Position)
-
-            -- ATACA COM ESPADA LAVA + HABILIDADES
-            pcall(function()
-                espadaLava:Activate()
-                wait(0.05)
-                espadaLava:Activate()
-                
-                -- Carrega Vulcão
-                carregarVulcao()
-                
-                -- Usa habilidades Lava
-                usarHabilidadesLava()
-            end)
-
-            killsLava = killsLava + 1
-            killsLavaLabel.Text = "🌋 Kills Lava: " .. killsLava
-            statusKillLava.Text = "🌋 ATACANDO!"
-            statusKillLava.TextColor3 = Color3.fromRGB(255, 150, 0)
-            alvoLavaText.Text = "🌋 " .. alvoLava.Name .. " 💀"
-            alvoLavaText.TextColor3 = Color3.fromRGB(255, 150, 0)
-            
-            -- Atualiza status das habilidades
-            local agora = tick()
-            local vulcaoStatus = (cargaVulcao >= cargaMaxima and agora - ultimoUsoVulcao > tempoCooldownVulcao) and "✅ PRONTO" or "⏳ Carregando"
-            local explosaoStatus = (agora - ultimoUsoExplosao > tempoCooldownExplosao) and "✅ PRONTO" or "⏳ " .. math.floor(tempoCooldownExplosao - (agora - ultimoUsoExplosao)) .. "s"
-            local formaStatus = (agora - ultimoUsoForma > tempoCooldownForma) and "✅ PRONTO" or "⏳ " .. math.floor(tempoCooldownForma - (agora - ultimoUsoForma)) .. "s"
-            habilidadesLabel.Text = "💥 Explosão: " .. explosaoStatus .. "  |  🔥 Forma: " .. formaStatus
-        end
-    end
-end
-
-function alternarKillLava()
-    if not vivo() then
-        statusKillLava.Text = "⚠️ Morto!"
-        statusKillLava.TextColor3 = Color3.fromRGB(255, 200, 0)
-        wait(1)
-        statusKillLava.Text = "🔴 OFF"
-        statusKillLava.TextColor3 = Color3.fromRGB(255, 100, 100)
-        return
-    end
-
-    matandoLava = not matandoLava
-
-    if matandoLava then
-        acharEspadaLava()
-        if not espadaLava then
-            statusKillLava.Text = "⚠️ Sem Espada Lava!"
-            statusKillLava.TextColor3 = Color3.fromRGB(255, 200, 0)
-            matandoLava = false
-            btnKillLava.Text = "🌋 ATIVAR LAVA"
-            btnKillLava.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
-            wait(2)
-            statusKillLava.Text = "🔴 OFF"
-            statusKillLava.TextColor3 = Color3.fromRGB(255, 100, 100)
-            return
-        end
-
-        btnKillLava.Text = "⏹ PARAR LAVA"
-        btnKillLava.BackgroundColor3 = Color3.fromRGB(200, 100, 0)
-        statusKillLava.Text = "🟢 ON"
-        statusKillLava.TextColor3 = Color3.fromRGB(255, 200, 0)
-
-        -- Resetar contadores de cooldown
-        ultimoUsoVulcao = 0
-        ultimoUsoExplosao = 0
-        ultimoUsoForma = 0
-        cargaVulcao = 0
-
-        if loopKillLava then loopKillLava:Disconnect() end
-        loopKillLava = RunService.Heartbeat:Connect(function()
-            if matandoLava then
-                loopKillLavaFunc()
-                wait(0.05)
-            end
-        end)
-    else
-        btnKillLava.Text = "🌋 ATIVAR LAVA"
-        btnKillLava.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
-        statusKillLava.Text = "🔴 OFF"
-        statusKillLava.TextColor3 = Color3.fromRGB(255, 100, 100)
-        alvoLava = nil
-        alvoLavaText.Text = "🌋 Alvo Lava: Nenhum"
-        alvoLavaText.TextColor3 = Color3.fromRGB(200, 200, 200)
-
-        if loopKillLava then
-            loopKillLava:Disconnect()
-            loopKillLava = nil
-        end
-    end
-end
-
--- ===== ORBES =====
-
-function coletarOrbes()
+local function antiAFKFunc()
+    if not antiAFKAtivo then return end
     if not vivo() then return end
 
-    local pos = rootPart.Position
-    local count = 0
+    print("🛡️ Executando Anti-AFK...")
 
-    for _, obj in pairs(cacheObjetos) do
-        if obj:IsA("BasePart") and classificarObjeto(obj.Name) == "orbe" then
-            if obj.BrickColor and obj.BrickColor.Name:lower():find("white") then
-                local dist = (obj.Position - pos).Magnitude
-                if dist < raio then
-                    pcall(function()
-                        obj.CFrame = rootPart.CFrame + Vector3.new(0, 1.5, 0)
-                        Debris:AddItem(obj, 0.1)
-                        count = count + 1
-                    end)
-                end
-            end
-        end
-    end
+    -- Apenas simula teclas rapidamente sem travar o personagem
+    local teclas = {"W", "A", "S", "D", "Space"}
+    local tecla = teclas[math.random(1, #teclas)]
+    
+    pcall(function()
+        -- Pressiona e solta a tecla rapidamente
+        VirtualInputManager:SendKeyEvent(true, tecla, false, game)
+        wait(0.05)
+        VirtualInputManager:SendKeyEvent(false, tecla, false, game)
+    end)
 
-    if count > 0 then
-        orbes = orbes + count
-        contador.Text = "💎"..diamantes.."  ⚔️"..kills.."  ⚪"..orbes
-    end
+    -- Pequeno movimento aleatório (apenas 1 vez, não em loop)
+    local direcoes = {
+        Vector3.new(1, 0, 0),
+        Vector3.new(-1, 0, 0),
+        Vector3.new(0, 0, 1),
+        Vector3.new(0, 0, -1)
+    }
+    local dir = direcoes[math.random(1, #direcoes)]
+    pcall(function()
+        rootPart.CFrame = rootPart.CFrame + (dir * 2)
+    end)
 
-    local total = contarOrbes()
-    if total > 0 then
-        orbesDetect.Text = "🟢 Orbes: "..total
-        orbesDetect.TextColor3 = Color3.fromRGB(0, 255, 100)
-    else
-        orbesDetect.Text = "🔴 Orbes: 0"
-        orbesDetect.TextColor3 = Color3.fromRGB(255, 100, 100)
-    end
-end
-
-function alternarOrbes()
-    if not vivo() then
-        statusOrbes.Text = "⚠️ Morto!"
-        statusOrbes.TextColor3 = Color3.fromRGB(255, 200, 0)
-        wait(1)
-        statusOrbes.Text = "🔴 OFF"
-        statusOrbes.TextColor3 = Color3.fromRGB(255, 100, 100)
-        return
-    end
-
-    coletandoOrbes = not coletandoOrbes
-
-    if coletandoOrbes then
-        btnOrbes.Text = "⏹ PARAR"
-        btnOrbes.BackgroundColor3 = Color3.fromRGB(200, 150, 0)
-        statusOrbes.Text = "🟢 ON"
-        statusOrbes.TextColor3 = Color3.fromRGB(0, 255, 100)
-
-        if loopOrbes then loopOrbes:Disconnect() end
-        loopOrbes = RunService.Heartbeat:Connect(function()
-            if coletandoOrbes and vivo() then
-                if atualizarCache() then
-                    coletarOrbes()
-                end
-            end
-        end)
-    else
-        btnOrbes.Text = "⚪ ATIVAR"
-        btnOrbes.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
-        statusOrbes.Text = "🔴 OFF"
-        statusOrbes.TextColor3 = Color3.fromRGB(255, 100, 100)
-
-        if loopOrbes then
-            loopOrbes:Disconnect()
-            loopOrbes = nil
-        end
-    end
-end
-
--- ===== ANTI-AFK =====
-
-local function alternarAntiAFK()
-    antiAFKAtivo = not antiAFKAtivo
-
-    if antiAFKAtivo then
-        btnAntiAFK.Text = "🛡️ ANTI-AFK: ON"
-        btnAntiAFK.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
-        statusAntiAFK.Text = "🟢 Ativo"
-        statusAntiAFK.TextColor3 = Color3.fromRGB(0, 255, 100)
-
-        if loopAntiAFK then loopAntiAFK:Disconnect() end
-        loopAntiAFK = RunService.Heartbeat:Connect(function()
-            if tick() - ultimoMovimento > math.random(30, 60) then
-                antiAFKFunc()
-                ultimoMovimento = tick()
-            end
-        end)
-
-        antiAFKFunc()
-        ultimoMovimento = tick()
-
-        print("🛡️ Anti-AFK ATIVADO!")
-    else
-        btnAntiAFK.Text = "🛡️ ANTI-AFK: OFF"
-        btnAntiAFK.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-        statusAntiAFK.Text = "🔴 Inativo"
-        statusAntiAFK.TextColor3 = Color3.fromRGB(255, 100, 100)
-
-        if loopAntiAFK then
-            loopAntiAFK:Disconnect()
-            loopAntiAFK = nil
-        end
-        print("🛡️ Anti-AFK DESATIVADO!")
-    end
+    afkContador = afkContador + 1
+    print("🛡️ Anti-AFK executado! Total: " .. afkContador)
 end
 
 -- ============================================
@@ -2323,9 +1739,7 @@ closeBtn.MouseButton1Click:Connect(function()
     if otimizacaoAtiva then otimizarGraficos() end
     gui:Destroy()
     print("✅ MCRM HUB v1.4.0 finalizado!")
-end)
-
--- ============================================
+end)-- ============================================
 -- RESPAWN
 -- ============================================
 
@@ -2373,7 +1787,7 @@ player.CharacterAdded:Connect(function(novoChar)
         btnKillLava.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
         statusKillLava.Text = "🔄 Reviveu!"
         statusKillLava.TextColor3 = Color3.fromRGB(255, 200, 0)
-                    alvoLavaText.Text = "🌋 Alvo Lava: Reviveu"
+        alvoLavaText.Text = "🌋 Alvo Lava: Reviveu"
         alvoLavaText.TextColor3 = Color3.fromRGB(255, 200, 0)
         if loopKillLava then
             loopKillLava:Disconnect()
