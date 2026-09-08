@@ -697,7 +697,6 @@ statusColeta.Font = Enum.Font.Gotham
 statusColeta.TextXAlignment = Enum.TextXAlignment.Left
 statusColeta.Parent = secao1
 
--- Raio
 local raioFrame = Instance.new("Frame")
 raioFrame.Size = UDim2.new(1, 0, 0, 20)
 raioFrame.Position = UDim2.new(0, 0, 0, 54)
@@ -802,7 +801,6 @@ statusKill.Font = Enum.Font.Gotham
 statusKill.TextXAlignment = Enum.TextXAlignment.Left
 statusKill.Parent = secao2
 
--- Modo agressivo
 local modoAgressivo = false
 local btnModo = Instance.new("TextButton")
 btnModo.Size = UDim2.new(0, 130, 0, 20)
@@ -922,7 +920,7 @@ performance.TextXAlignment = Enum.TextXAlignment.Center
 performance.Parent = content
 
 -- ============================================
--- FUNÇÕES OTIMIZADAS
+-- FUNÇÕES
 -- ============================================
 
 function vivo()
@@ -985,7 +983,7 @@ function contarOrbes()
     return count
 end
 
--- ===== COLETA OTIMIZADA =====
+-- ===== COLETA =====
 
 function coletar()
     if not vivo() then return end
@@ -1051,7 +1049,7 @@ function alternarColeta()
     end
 end
 
--- ===== KILL OTIMIZADO =====
+-- ===== KILL =====
 
 function loopKillFunc()
     if not matando then return end
@@ -1178,8 +1176,8 @@ function alternarKill()
         acharEspada()
         if not espada then
             statusKill.Text = "⚠️ Sem espada!"
-                        statusKill.TextColor3 = Color3.fromRGB(255, 200, 0)
-            matando = false
+            statusKill.TextColor3 = Color3.fromRGB(255, 200, 0)
+                        matando = false
             btnKill.Text = "⚔️ ATIVAR"
             btnKill.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
             wait(2)
@@ -1216,7 +1214,7 @@ function alternarKill()
     end
 end
 
--- ===== ORBES OTIMIZADO =====
+-- ===== ORBES =====
 
 function coletarOrbes()
     if not vivo() then return end
@@ -1293,6 +1291,43 @@ function alternarOrbes()
     end
 end
 
+-- ===== ANTI-AFK =====
+
+local function alternarAntiAFK()
+    antiAFKAtivo = not antiAFKAtivo
+    
+    if antiAFKAtivo then
+        btnAntiAFK.Text = "🛡️ ANTI-AFK: ON"
+        btnAntiAFK.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+        statusAntiAFK.Text = "🟢 Ativo"
+        statusAntiAFK.TextColor3 = Color3.fromRGB(0, 255, 100)
+        
+        if loopAntiAFK then loopAntiAFK:Disconnect() end
+        loopAntiAFK = RunService.Heartbeat:Connect(function()
+            if tick() - ultimoMovimento > math.random(30, 60) then
+                antiAFKFunc()
+                ultimoMovimento = tick()
+            end
+        end)
+        
+        antiAFKFunc()
+        ultimoMovimento = tick()
+        
+        print("🛡️ Anti-AFK ATIVADO!")
+    else
+        btnAntiAFK.Text = "🛡️ ANTI-AFK: OFF"
+        btnAntiAFK.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        statusAntiAFK.Text = "🔴 Inativo"
+        statusAntiAFK.TextColor3 = Color3.fromRGB(255, 100, 100)
+        
+        if loopAntiAFK then
+            loopAntiAFK:Disconnect()
+            loopAntiAFK = nil
+        end
+        print("🛡️ Anti-AFK DESATIVADO!")
+    end
+end
+
 -- ============================================
 -- EVENTOS
 -- ============================================
@@ -1300,9 +1335,12 @@ end
 btnColeta.MouseButton1Click:Connect(alternarColeta)
 btnKill.MouseButton1Click:Connect(alternarKill)
 btnOrbes.MouseButton1Click:Connect(alternarOrbes)
-btnAntiAFK.MouseButton1Click:Connect(alternarAntiAFK)
 
--- OTIMIZAÇÃO GRÁFICA
+btnAntiAFK.MouseButton1Click:Connect(function()
+    print("🖱️ Botão Anti-AFK clicado!")
+    alternarAntiAFK()
+end)
+
 btnOtimizar.MouseButton1Click:Connect(function()
     otimizarGraficos()
     if otimizacaoAtiva then
@@ -1327,12 +1365,10 @@ btnExtremo.MouseButton1Click:Connect(function()
     otimizacaoAtiva = true
 end)
 
--- VELOCIDADE
 btnVelocidadeMais.MouseButton1Click:Connect(aumentarVelocidade)
 btnVelocidadeMenos.MouseButton1Click:Connect(diminuirVelocidade)
 btnResetVelocidade.MouseButton1Click:Connect(resetarVelocidade)
 
--- MODO AGRESSIVO
 btnModo.MouseButton1Click:Connect(function()
     modoAgressivo = not modoAgressivo
     if modoAgressivo then
@@ -1344,7 +1380,6 @@ btnModo.MouseButton1Click:Connect(function()
     end
 end)
 
--- RAIO
 raioMais.MouseButton1Click:Connect(function()
     if raio < 300 then
         raio = raio + 10
@@ -1361,23 +1396,21 @@ raioMenos.MouseButton1Click:Connect(function()
     end
 end)
 
--- MINIMIZAR
 minBtn.MouseButton1Click:Connect(function()
     minimizado = not minimizado
     if minimizado then
         frame.Size = UDim2.new(0, 340, 0, 40)
-        content.Visible = false
+        scrollFrame.Visible = false
         minBtn.Text = "□"
         minBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
     else
-        frame.Size = UDim2.new(0, 340, 0, 600)
-        content.Visible = true
+        frame.Size = UDim2.new(0, 340, 0, 500)
+        scrollFrame.Visible = true
         minBtn.Text = "─"
         minBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 100)
     end
 end)
 
--- FECHAR
 closeBtn.MouseButton1Click:Connect(function()
     coletando = false
     matando = false
@@ -1387,8 +1420,8 @@ closeBtn.MouseButton1Click:Connect(function()
     if loopKill then loopKill:Disconnect() end
     if loopOrbes then loopOrbes:Disconnect() end
     if loopAntiAFK then loopAntiAFK:Disconnect() end
+    if loopVelocidade then loopVelocidade:Disconnect() end
     if otimizacaoAtiva then otimizarGraficos() end
-    definirVelocidade(16)
     gui:Destroy()
     print("✅ MCRM HUB finalizado!")
 end)
@@ -1403,7 +1436,21 @@ player.CharacterAdded:Connect(function(novoChar)
     humanoid = character:WaitForChild("Humanoid")
     wait(2)
     acharEspada()
-    definirVelocidade(velocidadeAtual)
+    
+    if velocidadeAtual > 16 then
+        definirVelocidade(velocidadeAtual)
+        print("🏃 Velocidade restaurada: " .. velocidadeAtual)
+    end
+    
+    if antiAFKAtivo then
+        if loopAntiAFK then loopAntiAFK:Disconnect() end
+        loopAntiAFK = RunService.Heartbeat:Connect(function()
+            if tick() - ultimoMovimento > math.random(30, 60) then
+                antiAFKFunc()
+                ultimoMovimento = tick()
+            end
+        end)
+    end
     
     if matando then
         matando = false
@@ -1466,14 +1513,13 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
-print("✅ MCRM HUB FINAL CARREGADO!")
-print("🛡️ ANTI-AFK DISPONÍVEL!")
-print("🏃 CONTROLE DE VELOCIDADE DISPONÍVEL!")
-print("🎨 OTIMIZAÇÃO GRÁFICA DISPONÍVEL!")
+print("✅ MCRM HUB FINAL CORRIGIDO!")
+print("🛡️ ANTI-AFK FUNCIONANDO!")
+print("🏃 VELOCIDADE PERSISTENTE!")
+print("📜 INTERFACE COM SCROLL!")
 print("💎 AZUL = Coleta Drops")
 print("⚔️ VERMELHO = Kill (Costas + Poderes)")
 print("⚪ AMARELO = Orbes")
 print("🎯 Modo Agressivo disponível")
 print("📏 + e - = Raio")
 print("⚡ Monitor de performance ativo")
-print("💀 Ao morrer, o Kill desliga automaticamente!")
