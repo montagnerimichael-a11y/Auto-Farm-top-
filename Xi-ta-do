@@ -1,4 +1,4 @@
--- PAINEL MACABRO MICHAELXITADOO (LÓGICA FINAL v18 - ANTI-HACK GIRATÓRIO)
+-- PAINEL MACABRO MICHAELXITADOO (LÓGICA FINAL v19)
 if getgenv().MontagneriXIT_Cleanup then pcall(getgenv().MontagneriXIT_Cleanup) end
 
 local P = game.Players.LocalPlayer
@@ -9,11 +9,10 @@ local L = game:GetService("Lighting")
 local Cam = W.CurrentCamera
 
 local c = {Aimbot=false, ESP=false, Hitbox=false, Spd=false, Jmp=false, Full=false, AutoShoot=false, InfJump=false, Fly=false, FpsBoost=false, NoRecoil=false, AntiHack=false, FOV=80, Vel=50, JumpPower=100}
-local gui, pan, top, scr, bol, ch, hu, rt, bv
+local gui, pan, top, scr, bol, ch, hu, rt, bv, gyro
 local lpA, lpU
 local espTags = {}
 local toggles = {}
-local neckOriginal = nil
 
 local FF = {Bg=Color3.fromRGB(10, 0, 0), Top=Color3.fromRGB(30, 0, 0), Neon=Color3.fromRGB(255,0,0), Text=Color3.fromRGB(255,255,255), Btn=Color3.fromRGB(20, 5, 5), On=Color3.fromRGB(150,0,0), Off=Color3.fromRGB(20,5,5)}
 
@@ -24,21 +23,8 @@ local function DisableAll()
     uC()
     if hu then hu.WalkSpeed = 16; hu.JumpPower = 50; hu.UseJumpPower = false end
     if bv then bv:Destroy() bv = nil end
+    if gyro then gyro:Destroy() gyro = nil end
     L.Ambient = Color3.fromRGB(70,70,70); L.OutdoorAmbient = Color3.fromRGB(128,128,128); L.GlobalShadows = true
-    
-    -- Restaura o pescoço
-    if ch then
-        local torso = ch:FindFirstChild("UpperTorso") or ch:FindFirstChild("Torso")
-        local head = ch:FindFirstChild("Head")
-        if torso and head then
-            local neck = torso:FindFirstChild("Neck") or torso:FindFirstChild("NeckJoint")
-            if neck and neckOriginal then
-                neck.C0 = neckOriginal
-            end
-            head.Size = Vector3.new(2, 1, 1)
-            head.Transparency = 0
-        end
-    end
     
     for p, t in pairs(espTags) do
         if t.hl then t.hl:Destroy() end
@@ -132,28 +118,26 @@ lpU = R.Heartbeat:Connect(function()
         if hu.PlatformStand then hu.PlatformStand = false end
     end
 
-    -- ANTI-HACK: GIRAR A CABEÇA
+    -- ANTI-HACK (Giroscópio na cabeça)
     if ch then
         local head = ch:FindFirstChild("Head")
-        local torso = ch:FindFirstChild("UpperTorso") or ch:FindFirstChild("Torso")
-        local neck = torso and (torso:FindFirstChild("Neck") or torso:FindFirstChild("NeckJoint"))
-        
         if c.AntiHack then
-            if neck then
-                if not neckOriginal then neckOriginal = neck.C0 end
-                neck.C0 = neckOriginal * CFrame.Angles(0, math.rad(tick() * 2000 % 360), 0)
+            if head and not gyro then
+                gyro = Instance.new("BodyGyro", head)
+                gyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+                gyro.P = 30000
+                gyro.D = 500
+            end
+            if gyro then
+                gyro.CFrame = head.CFrame * CFrame.Angles(0, math.rad(tick() * 2000 % 360), 0)
             end
             if head then
                 head.Size = Vector3.new(0.5, 0.5, 0.5)
-                head.Transparency = 0.5
             end
         else
-            if neck and neckOriginal then
-                neck.C0 = neckOriginal
-            end
-            if head and head.Size ~= Vector3.new(2, 1, 1) then
+            if gyro then gyro:Destroy() gyro = nil end
+            if head then
                 head.Size = Vector3.new(2, 1, 1)
-                head.Transparency = 0
             end
         end
     end
@@ -164,7 +148,6 @@ lpU = R.Heartbeat:Connect(function()
             local pHum = pCh:FindFirstChildOfClass("Humanoid")
             if pHum and pHum.Health > 0 then
                 
-                -- ESP
                 if c.ESP then
                     if not espTags[p] or espTags[p].char ~= pCh or not espTags[p].hl.Parent then
                         if espTags[p] then
@@ -188,17 +171,17 @@ lpU = R.Heartbeat:Connect(function()
                     espTags[p] = nil
                 end
                 
-                -- HITBOX (Bolha Invisível)
                 local head = pCh:FindFirstChild("Head")
                 if head then
                     if c.Hitbox then
                         if not head:FindFirstChild("HitboxBolha") then
                             local bolha = Instance.new("Part")
                             bolha.Name = "HitboxBolha"
-                            bolha.Size = Vector3.new(12, 12, 12)
+                            bolha.Size = Vector3.new(15, 15, 15)
                             bolha.Transparency = 1
                             bolha.CanCollide = false
                             bolha.CanTouch = false
+                            bolha.CanQuery = true
                             bolha.Massless = true
                             bolha.Parent = head
                             
@@ -222,7 +205,6 @@ P.CharacterAdded:Connect(function(newChar)
     ch = newChar
     hu = ch:FindFirstChildOfClass("Humanoid")
     rt = ch:FindFirstChild("HumanoidRootPart")
-    neckOriginal = nil
     if hu then
         hu.StateChanged:Connect(function(old, new)
             if c.InfJump and new == Enum.HumanoidStateType.Landed then hu:ChangeState(Enum.HumanoidStateType.Jumping) end
@@ -320,4 +302,4 @@ top.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch 
 top.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end end)
 U.InputChanged:Connect(function(i) if drag and (i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseMovement) then local d=i.Position-sP; pan.Position=UDim2.new(sPos.X.Scale,sPos.X.Offset+d.X,sPos.Y.Scale,sPos.Y.Offset+d.Y) end end)
 
-print("MICHAELXITADOO v18 CARREGADO COM SUCESSO!")
+print("MICHAELXITADOO v19 CARREGADO COM SUCESSO!")
