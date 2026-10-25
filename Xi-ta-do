@@ -1,4 +1,4 @@
--- PAINEL MACABRO MICHAELXITADOO (LÓGICA v31 - HITBOX 30X SEM CONGELAR)
+-- PAINEL MACABRO MICHAELXITADOO (LÓGICA FINAL v32 - HITBOX DIRETA 30X)
 if getgenv().MontagneriXIT_Cleanup then pcall(getgenv().MontagneriXIT_Cleanup) end
 
 local P = game.Players.LocalPlayer
@@ -32,15 +32,13 @@ local function DisableAll()
         espTags[p] = nil
     end
     
-    -- Restaura o corpo dos inimigos
+    -- Restaura Cabeça e Tronco
     for _, p in ipairs(game.Players:GetPlayers()) do
         if p.Character then
-            local hrp = p.Character:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                hrp.Size = Vector3.new(2, 2, 1)
-                hrp.Transparency = 1
-                hrp.CanCollide = true
-            end
+            local head = p.Character:FindFirstChild("Head")
+            local torso = p.Character:FindFirstChild("UpperTorso") or p.Character:FindFirstChild("Torso")
+            if head then head.Size = Vector3.new(2, 1, 1); head.Transparency = 0; head.CanCollide = true end
+            if torso then torso.Size = Vector3.new(2, 2, 1); torso.Transparency = 0; torso.CanCollide = true end
         end
     end
 
@@ -168,20 +166,32 @@ lpU = R.Heartbeat:Connect(function()
                     espTags[p] = nil
                 end
                 
-                -- HITBOX 30X NO CORPO (NÃO CONGELA A ANIMAÇÃO)
-                local hrp = pCh:FindFirstChild("HumanoidRootPart")
-                if hrp then
+                -- HITBOX 30X (CABEÇA E TRONCO)
+                local head = pCh:FindFirstChild("Head")
+                local torso = pCh:FindFirstChild("UpperTorso") or pCh:FindFirstChild("Torso")
+                
+                if head and torso then
                     if c.Hitbox then
-                        if hrp.Size ~= Vector3.new(30, 30, 30) then
-                            hrp.Size = Vector3.new(30, 30, 30)
-                            hrp.Transparency = 1 -- Invisível
-                            hrp.CanCollide = false -- Não atrapalha o movimento deles
+                        if head.Size ~= Vector3.new(30, 30, 30) then
+                            head.Size = Vector3.new(30, 30, 30)
+                            head.Transparency = 0.5
+                            head.CanCollide = false
+                        end
+                        if torso.Size ~= Vector3.new(30, 30, 30) then
+                            torso.Size = Vector3.new(30, 30, 30)
+                            torso.Transparency = 0.5
+                            torso.CanCollide = false
                         end
                     else
-                        if hrp.Size ~= Vector3.new(2, 2, 1) then
-                            hrp.Size = Vector3.new(2, 2, 1)
-                            hrp.Transparency = 1
-                            hrp.CanCollide = true
+                        if head.Size ~= Vector3.new(2, 1, 1) then
+                            head.Size = Vector3.new(2, 1, 1)
+                            head.Transparency = 0
+                            head.CanCollide = true
+                        end
+                        if torso.Size ~= Vector3.new(2, 2, 1) then
+                            torso.Size = Vector3.new(2, 2, 1)
+                            torso.Transparency = 0
+                            torso.CanCollide = true
                         end
                     end
                 end
@@ -267,7 +277,7 @@ local function makeBtn(txt, y, key, cb)
 end
 
 makeBtn("AIMBOT (TRAVA MIRA)", 10, "Aimbot")
-makeBtn("HITBOX NORMAL 30X", 55, "Hitbox")
+makeBtn("HITBOX 30X (CABECA+TRONCO)", 55, "Hitbox")
 makeBtn("AUTO SHOOT (ATIRAR AUTO)", 100, "AutoShoot")
 makeBtn("ESP (VER INIMIGOS)", 145, "ESP")
 makeBtn("SPEED", 190, "Spd")
@@ -292,4 +302,4 @@ top.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch 
 top.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end end)
 U.InputChanged:Connect(function(i) if drag and (i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseMovement) then local d=i.Position-sP; pan.Position=UDim2.new(sPos.X.Scale,sPos.X.Offset+d.X,sPos.Y.Scale,sPos.Y.Offset+d.Y) end end)
 
-print("MICHAELXITADOO v31 CARREGADO COM SUCESSO!")
+print("MICHAELXITADOO v32 CARREGADO COM SUCESSO!")
