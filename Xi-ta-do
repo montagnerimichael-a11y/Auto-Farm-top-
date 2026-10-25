@@ -1,4 +1,4 @@
--- PAINEL MACABRO MICHAELXITADOO (LÓGICA v26 - DUPLO AIMBOT)
+-- PAINEL MACABRO MICHAELXITADOO (LÓGICA v27 - DUPLO AIMBOT COM HITBOX)
 if getgenv().MontagneriXIT_Cleanup then pcall(getgenv().MontagneriXIT_Cleanup) end
 
 local P = game.Players.LocalPlayer
@@ -8,7 +8,6 @@ local W = game:GetService("Workspace")
 local L = game:GetService("Lighting")
 local Cam = W.CurrentCamera
 
--- Adicionado AimbotNormal e AimbotCongelar
 local c = {AimbotNormal=false, AimbotCongelar=false, ESP=false, Spd=false, Jmp=false, Full=false, AutoShoot=false, InfJump=false, Fly=false, FpsBoost=false, NoRecoil=false, AntiHack=false, FOV=150, Vel=50, JumpPower=100}
 local gui, pan, top, scr, bol, ch, hu, rt, bv, bav
 local lpA, lpU
@@ -33,14 +32,20 @@ local function DisableAll()
         espTags[p] = nil
     end
     
-    -- Restaura a cabeça dos inimigos
+    -- Restaura cabeça e corpo dos inimigos
     for _, p in ipairs(game.Players:GetPlayers()) do
         if p.Character then
             local head = p.Character:FindFirstChild("Head")
+            local hrp = p.Character:FindFirstChild("HumanoidRootPart")
             if head then
                 head.Size = Vector3.new(2, 1, 1)
                 head.Transparency = 0
                 head.CanCollide = true
+            end
+            if hrp then
+                hrp.Size = Vector3.new(2, 2, 1)
+                hrp.CanCollide = true
+                hrp.Transparency = 1
             end
         end
     end
@@ -82,14 +87,10 @@ end
 
 if lpA then lpA:Disconnect() end
 lpA = R.RenderStepped:Connect(function()
-    -- Se qualquer um dos dois Aimbots estiver ativo, puxa a mira
     if c.AimbotNormal or c.AimbotCongelar then
         local target = getClosest()
         if target then
-            -- Trava na cabeça
             Cam.CFrame = CFrame.new(Cam.CFrame.Position, target.Position)
-            
-            -- Atira automático
             if c.AutoShoot and ch then
                 local tool = ch:FindFirstChildOfClass("Tool")
                 if tool then pcall(function() tool:Activate() end) end
@@ -169,22 +170,45 @@ lpU = R.Heartbeat:Connect(function()
                     espTags[p] = nil
                 end
                 
-                -- HITBOX (Aumentada para 30x)
+                -- SISTEMA DE HITBOX DUPLA
                 local head = pCh:FindFirstChild("Head")
-                if head then
+                local hrp = pCh:FindFirstChild("HumanoidRootPart")
+                if head and hrp then
                     if c.AimbotCongelar then
-                        -- Modo Congelar (Hitbox 30)
+                        -- MODO CONGELAR (Cabeça 30x)
                         if head.Size ~= Vector3.new(30, 30, 30) then
                             head.Size = Vector3.new(30, 30, 30)
                             head.Transparency = 0.5
                             head.CanCollide = false
                         end
-                    else
-                        -- Modo Normal (Hitbox Normal)
+                        if hrp.Size ~= Vector3.new(2, 2, 1) then
+                            hrp.Size = Vector3.new(2, 2, 1)
+                            hrp.Transparency = 1
+                            hrp.CanCollide = true
+                        end
+                    elseif c.AimbotNormal then
+                        -- MODO NORMAL (Corpo 15x invisível)
                         if head.Size ~= Vector3.new(2, 1, 1) then
                             head.Size = Vector3.new(2, 1, 1)
                             head.Transparency = 0
                             head.CanCollide = true
+                        end
+                        if hrp.Size ~= Vector3.new(15, 15, 15) then
+                            hrp.Size = Vector3.new(15, 15, 15)
+                            hrp.Transparency = 1
+                            hrp.CanCollide = false
+                        end
+                    else
+                        -- DESLIGADO
+                        if head.Size ~= Vector3.new(2, 1, 1) then
+                            head.Size = Vector3.new(2, 1, 1)
+                            head.Transparency = 0
+                            head.CanCollide = true
+                        end
+                        if hrp.Size ~= Vector3.new(2, 2, 1) then
+                            hrp.Size = Vector3.new(2, 2, 1)
+                            hrp.Transparency = 1
+                            hrp.CanCollide = true
                         end
                     end
                 end
@@ -264,13 +288,18 @@ local function makeBtn(txt, y, key, cb)
         TweenService:Create(b, TweenInfo.new(0.2), {TextColor3 = on and Color3.fromRGB(255,255,255) or Color3.fromRGB(150,150,150)}):Play()
         TweenService:Create(stroke, TweenInfo.new(0.2), {Color = on and Color3.fromRGB(255,0,0) or Color3.fromRGB(60,0,0)}):Play()
         
-        -- Se ligar um aimbot, desliga o outro automaticamente
         if key == "AimbotNormal" and on then
             c.AimbotCongelar = false
-            if toggles.AimbotCongelar then toggles.AimbotCongelar.BackgroundColor3 = Color3.fromRGB(20,5,5) end
+            if toggles.AimbotCongelar then 
+                toggles.AimbotCongelar.BackgroundColor3 = Color3.fromRGB(20,5,5)
+                if toggles.AimbotCongelar:FindFirstChild("UIStroke") then toggles.AimbotCongelar.UIStroke.Color = Color3.fromRGB(60, 0, 0) end
+            end
         elseif key == "AimbotCongelar" and on then
             c.AimbotNormal = false
-            if toggles.AimbotNormal then toggles.AimbotNormal.BackgroundColor3 = Color3.fromRGB(20,5,5) end
+            if toggles.AimbotNormal then 
+                toggles.AimbotNormal.BackgroundColor3 = Color3.fromRGB(20,5,5)
+                if toggles.AimbotNormal:FindFirstChild("UIStroke") then toggles.AimbotNormal.UIStroke.Color = Color3.fromRGB(60, 0, 0) end
+            end
         end
         
         if on then Notify("XIT-INSERIDO 💀", true) else Notify("XIT-REMOVIDO 🩸", false) end
@@ -279,7 +308,7 @@ local function makeBtn(txt, y, key, cb)
 end
 
 makeBtn("AIMBOT CONGELAR (30X)", 10, "AimbotCongelar")
-makeBtn("AIMBOT NORMAL (SEM CONGELAR)", 55, "AimbotNormal")
+makeBtn("AIMBOT NORMAL (HITBOX 15X)", 55, "AimbotNormal")
 makeBtn("AUTO SHOOT (ATIRAR AUTO)", 100, "AutoShoot")
 makeBtn("ESP (VER INIMIGOS)", 145, "ESP")
 makeBtn("SPEED", 190, "Spd")
@@ -304,4 +333,4 @@ top.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch 
 top.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end end)
 U.InputChanged:Connect(function(i) if drag and (i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseMovement) then local d=i.Position-sP; pan.Position=UDim2.new(sPos.X.Scale,sPos.X.Offset+d.X,sPos.Y.Scale,sPos.Y.Offset+d.Y) end end)
 
-print("MICHAELXITADOO v26 CARREGADO COM SUCESSO!")
+print("MICHAELXITADOO v27 CARREGADO COM SUCESSO!")
