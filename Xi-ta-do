@@ -1,4 +1,4 @@
--- PAINEL NEON CUTE (LÓGICA FINAL v11)
+-- PAINEL UNIVERSAL MACABRO (LÓGICA v13)
 if getgenv().MontagneriXIT_Cleanup then pcall(getgenv().MontagneriXIT_Cleanup) end
 
 local P = game.Players.LocalPlayer
@@ -15,7 +15,7 @@ local lpA, lpU
 local espTags = {}
 local toggles = {}
 
-local FF = {Bg=Color3.fromRGB(25, 15, 35), Top=Color3.fromRGB(45, 25, 60), Neon=Color3.fromRGB(255, 105, 180), Text=Color3.fromRGB(255,255,255), Btn=Color3.fromRGB(40, 30, 50), On=Color3.fromRGB(255, 105, 180), Off=Color3.fromRGB(40,30,50)}
+local FF = {Bg=Color3.fromRGB(10, 0, 0), Top=Color3.fromRGB(30, 0, 0), Neon=Color3.fromRGB(255,0,0), Text=Color3.fromRGB(255,255,255), Btn=Color3.fromRGB(20, 5, 5), On=Color3.fromRGB(150,0,0), Off=Color3.fromRGB(20,5,5)}
 
 local function uC() ch=P.Character; hu=ch and ch:FindFirstChildOfClass("Humanoid"); rt=ch and ch:FindFirstChild("HumanoidRootPart") end
 
@@ -45,7 +45,7 @@ local function DisableAll()
         c[key] = false
         btn.BackgroundColor3 = FF.Off
         btn.TextColor3 = Color3.fromRGB(150,150,150)
-        if btn:FindFirstChild("UIStroke") then btn.UIStroke.Color = Color3.fromRGB(80, 80, 80) end
+        if btn:FindFirstChild("UIStroke") then btn.UIStroke.Color = Color3.fromRGB(60, 0, 0) end
     end
 end
 getgenv().MontagneriXIT_Cleanup = DisableAll
@@ -78,12 +78,20 @@ end
 
 if lpA then lpA:Disconnect() end
 lpA = R.RenderStepped:Connect(function()
-    if c.Aimbot and c.AutoShoot then
+    if c.Aimbot then
         local target = getClosest()
         if target then
-            pcall(function() VIM:SendMouseButtonEvent(Cam.ViewportSize.X/2, Cam.ViewportSize.Y/2, 0, true, game, 1) end)
-            task.wait(0.05)
-            pcall(function() VIM:SendMouseButtonEvent(Cam.ViewportSize.X/2, Cam.ViewportSize.Y/2, 0, false, game, 1) end)
+            -- Aimbot suave (não trava seu boneco)
+            local targetCFrame = CFrame.new(Cam.CFrame.Position, target.Position)
+            Cam.CFrame = Cam.CFrame:Lerp(targetCFrame, 0.2)
+            
+            if c.AutoShoot then
+                pcall(function() 
+                    VIM:SendMouseButtonEvent(Cam.ViewportSize.X/2, Cam.ViewportSize.Y/2, 0, true, game, 1) 
+                    task.wait(0.05)
+                    VIM:SendMouseButtonEvent(Cam.ViewportSize.X/2, Cam.ViewportSize.Y/2, 0, false, game, 1)
+                end)
+            end
         end
     end
 end)
@@ -149,18 +157,18 @@ lpU = R.Heartbeat:Connect(function()
             local pHum = pCh:FindFirstChildOfClass("Humanoid")
             if pHum and pHum.Health > 0 then
                 if c.ESP then
-                    if not espTags[p] or not espTags[p].hl or not espTags[p].hl.Parent or not espTags[p].bb or not espTags[p].bb.Parent then
+                    if not espTags[p] or espTags[p].char ~= pCh or not espTags[p].hl.Parent then
                         if espTags[p] then
                             if espTags[p].hl then espTags[p].hl:Destroy() end
                             if espTags[p].bb then espTags[p].bb:Destroy() end
                         end
                         local hl = Instance.new("Highlight", pCh)
-                        hl.FillColor = Color3.fromRGB(255,105,180); hl.FillTransparency = 0.8; hl.OutlineColor = Color3.fromRGB(255,255,255)
+                        hl.FillColor = Color3.fromRGB(255,0,0); hl.FillTransparency = 0.8; hl.OutlineColor = Color3.fromRGB(255,255,255)
                         local bb = Instance.new("BillboardGui", pCh.Head)
                         bb.Size = UDim2.new(0,100,0,30); bb.AlwaysOnTop = true
                         local txt = Instance.new("TextLabel", bb)
-                        txt.Size = UDim2.new(1,0,1,0); txt.BackgroundTransparency = 1; txt.Text = p.Name; txt.TextColor3 = Color3.fromRGB(255,105,180); txt.TextStrokeTransparency = 0; txt.Font = Enum.Font.GothamBlack; txt.TextSize = 14
-                        espTags[p] = {hl=hl, bb=bb, txt=txt}
+                        txt.Size = UDim2.new(1,0,1,0); txt.BackgroundTransparency = 1; txt.Text = p.Name; txt.TextColor3 = Color3.fromRGB(255,0,0); txt.TextStrokeTransparency = 0; txt.Font = Enum.Font.GothamBlack; txt.TextSize = 14
+                        espTags[p] = {hl=hl, bb=bb, txt=txt, char=pCh}
                     else
                         local dist = math.floor((rt.Position - pCh.Head.Position).Magnitude)
                         espTags[p].txt.Text = p.Name .. " [" .. dist .. "m]"
@@ -202,32 +210,30 @@ lpU = R.Heartbeat:Connect(function()
         end
     end
 end)
--- INTERFACE NEON CUTE + CARREGAMENTO FOFO
+-- INTERFACE MACABRA + CARREGAMENTO DE SANGUE
 local TweenService = game:GetService("TweenService")
 
 -- TELA DE CARREGAMENTO
 local loadGui = Instance.new("ScreenGui", P.PlayerGui)
 loadGui.Name = "LoadingMichael"; loadGui.ResetOnSpawn = false
-local loadBg = Instance.new("Frame", loadGui); loadBg.Size = UDim2.new(1, 0, 1, 0); loadBg.BackgroundColor3 = Color3.fromRGB(255, 182, 193); loadBg.BorderSizePixel = 0; loadBg.ZIndex = 999
+local loadBg = Instance.new("Frame", loadGui); loadBg.Size = UDim2.new(1, 0, 1, 0); loadBg.BackgroundColor3 = Color3.fromRGB(5, 0, 0); loadBg.BorderSizePixel = 0; loadBg.ZIndex = 999
 
-local loadText = Instance.new("TextLabel", loadBg); loadText.Size = UDim2.new(1, 0, 0, 50); loadText.Position = UDim2.new(0, 0, 0.4, 0); loadText.BackgroundTransparency = 1; loadText.Text = "!MICHAELXITADOO!"; loadText.TextColor3 = Color3.fromRGB(255, 255, 255); loadText.Font = Enum.Font.GothamBlack; loadText.TextSize = 35; loadText.ZIndex = 1000
+local loadText = Instance.new("TextLabel", loadBg); loadText.Size = UDim2.new(1, 0, 0, 50); loadText.Position = UDim2.new(0, 0, 0.4, 0); loadText.BackgroundTransparency = 1; loadText.Text = "!MICHAELXITADOO!"; loadText.TextColor3 = Color3.fromRGB(255, 0, 0); loadText.Font = Enum.Font.GothamBlack; loadText.TextSize = 35; loadText.ZIndex = 1000
 
-local barBg = Instance.new("Frame", loadBg); barBg.Size = UDim2.new(0, 300, 0, 20); barBg.Position = UDim2.new(0.5, -150, 0.5, 30); barBg.BackgroundColor3 = Color3.fromRGB(255, 105, 180); barBg.BorderSizePixel = 0; barBg.ZIndex = 1000; Instance.new("UICorner", barBg).CornerRadius = UDim.new(1, 0)
+local barBg = Instance.new("Frame", loadBg); barBg.Size = UDim2.new(0, 300, 0, 20); barBg.Position = UDim2.new(0.5, -150, 0.5, 30); barBg.BackgroundColor3 = Color3.fromRGB(30, 0, 0); barBg.BorderSizePixel = 0; barBg.ZIndex = 1000; Instance.new("UICorner", barBg).CornerRadius = UDim.new(0, 4)
 
-local barFill = Instance.new("Frame", barBg); barFill.Size = UDim2.new(0, 0, 1, 0); barFill.BackgroundColor3 = Color3.fromRGB(255, 255, 255); barFill.BorderSizePixel = 0; barFill.ZIndex = 1001; Instance.new("UICorner", barFill).CornerRadius = UDim.new(1, 0)
-
-local heart = Instance.new("TextLabel", barFill); heart.Size = UDim2.new(0, 30, 0, 30); heart.Position = UDim2.new(1, -15, 0.5, -15); heart.BackgroundTransparency = 1; heart.Text = "❤️"; heart.TextSize = 20; heart.ZIndex = 1002
+local barFill = Instance.new("Frame", barBg); barFill.Size = UDim2.new(0, 0, 1, 0); barFill.BackgroundColor3 = Color3.fromRGB(200, 0, 0); barFill.BorderSizePixel = 0; barFill.ZIndex = 1001; Instance.new("UICorner", barFill).CornerRadius = UDim.new(0, 4)
 
 TweenService:Create(barFill, TweenInfo.new(4, Enum.EasingStyle.Linear), {Size = UDim2.new(1, 0, 1, 0)}):Play()
 
 task.delay(1.5, function() 
-    loadText.Text = "CARREGANDO... ✨" 
-    loadText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    loadText.Text = "CARREGANDO O INFERNO..." 
+    loadText.TextColor3 = Color3.fromRGB(200, 0, 0)
 end)
 
 task.delay(3.5, function() 
-    loadText.Text = "HACK-ATIVADO 💖" 
-    loadText.TextColor3 = Color3.fromRGB(255, 20, 147)
+    loadText.Text = "HACK-ATIVADO 🩸" 
+    loadText.TextColor3 = Color3.fromRGB(255, 0, 0)
     loadText.TextSize = 40
 end)
 
@@ -239,49 +245,48 @@ gui = Instance.new("ScreenGui", P.PlayerGui); gui.Name="MichaelXitado"; gui.Rese
 
 local function Notify(txt, isOn)
     for _, child in pairs(gui:GetChildren()) do if child.Name == "Notification" then child:Destroy() end end
-    local notif = Instance.new("Frame", gui); notif.Name = "Notification"; notif.Size = UDim2.new(0, 250, 0, 50); notif.Position = UDim2.new(0.5, -125, 0, -60); notif.BackgroundColor3 = Color3.fromRGB(25, 15, 35); notif.BorderSizePixel = 0; notif.ZIndex = 100
-    Instance.new("UICorner", notif).CornerRadius = UDim.new(0, 12)
+    local notif = Instance.new("Frame", gui); notif.Name = "Notification"; notif.Size = UDim2.new(0, 250, 0, 50); notif.Position = UDim2.new(0.5, -125, 0, -60); notif.BackgroundColor3 = Color3.fromRGB(10, 0, 0); notif.BorderSizePixel = 0; notif.ZIndex = 100
+    Instance.new("UICorner", notif).CornerRadius = UDim.new(0, 8)
     
-    local stroke = Instance.new("UIStroke", notif); stroke.Color = isOn and Color3.fromRGB(255, 105, 180) or Color3.fromRGB(100, 100, 100); stroke.Thickness = 2
+    local stroke = Instance.new("UIStroke", notif); stroke.Color = isOn and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 100, 100); stroke.Thickness = 2
     
-    local label = Instance.new("TextLabel", notif); label.Size = UDim2.new(1, 0, 1, 0); label.BackgroundTransparency = 1; label.Text = txt; label.TextColor3 = isOn and Color3.fromRGB(255, 105, 180) or Color3.fromRGB(150, 150, 150); label.Font = Enum.Font.GothamBlack; label.TextSize = 14; label.ZIndex = 101
+    local label = Instance.new("TextLabel", notif); label.Size = UDim2.new(1, 0, 1, 0); label.BackgroundTransparency = 1; label.Text = txt; label.TextColor3 = isOn and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(150, 150, 150); label.Font = Enum.Font.GothamBlack; label.TextSize = 14; label.ZIndex = 101
     
     TweenService:Create(notif, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -125, 0, 50)}):Play()
     task.delay(3.5, function() if notif and notif.Parent then local tweenOut = TweenService:Create(notif, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -125, 0, -60)}); tweenOut:Play(); tweenOut.Completed:Connect(function() notif:Destroy() end) end end)
 end
 
-pan=Instance.new("Frame", gui); pan.Size=UDim2.new(0,280,0,420); pan.Position=UDim2.new(1,-290,0,20); pan.BackgroundColor3=Color3.fromRGB(25, 15, 35); pan.BorderSizePixel=0; pan.ClipsDescendants = true
-Instance.new("UICorner",pan).CornerRadius=UDim.new(0,14)
-local bgM = Instance.new("TextLabel", pan); bgM.Size = UDim2.new(1, 0, 1, 0); bgM.BackgroundTransparency = 1; bgM.Text = "✨"; bgM.TextColor3 = Color3.fromRGB(50, 30, 70); bgM.TextTransparency = 0.5; bgM.TextScaled = true; bgM.Font = Enum.Font.GothamBlack; bgM.ZIndex = 1; bgM.Position = UDim2.new(0, 0, 0.1, 0)
+pan=Instance.new("Frame", gui); pan.Size=UDim2.new(0,280,0,420); pan.Position=UDim2.new(1,-290,0,20); pan.BackgroundColor3=Color3.fromRGB(10, 0, 0); pan.BorderSizePixel=0; pan.ClipsDescendants = true
+Instance.new("UICorner",pan).CornerRadius=UDim.new(0,10)
+local bgM = Instance.new("TextLabel", pan); bgM.Size = UDim2.new(1, 0, 1, 0); bgM.BackgroundTransparency = 1; bgM.Text = "M"; bgM.TextColor3 = Color3.fromRGB(40, 0, 0); bgM.TextTransparency = 0.3; bgM.TextScaled = true; bgM.Font = Enum.Font.GothamBlack; bgM.ZIndex = 1; bgM.Position = UDim2.new(0, 0, 0.1, 0)
 
-top=Instance.new("Frame", pan); top.Size=UDim2.new(1,0,0,50); top.BackgroundColor3=Color3.fromRGB(45, 25, 60); top.BorderSizePixel=0; top.ZIndex = 2; Instance.new("UICorner",top).CornerRadius=UDim.new(0,14)
-local ti=Instance.new("TextLabel", top); ti.Size=UDim2.new(1,-100,1,0); ti.Position=UDim2.new(0,12,0,0); ti.BackgroundTransparency=1; ti.Text="✨ MICHAELXITADOO 🎀"; ti.TextXAlignment=Enum.TextXAlignment.Left; ti.Font=Enum.Font.GothamBlack; ti.TextSize=16; ti.TextColor3=Color3.fromRGB(255,105,180); ti.ZIndex = 3
-local close = Instance.new("TextButton", top); close.Size=UDim2.new(0,25,0,25); close.Position=UDim2.new(1,-32,0.5,-12); close.Text="X"; close.BackgroundColor3=Color3.fromRGB(255,105,180); close.TextColor3=Color3.fromRGB(255,255,255); close.Font=Enum.Font.GothamBold; close.ZIndex = 3; Instance.new("UICorner",close).CornerRadius=UDim.new(0,5)
+top=Instance.new("Frame", pan); top.Size=UDim2.new(1,0,0,50); top.BackgroundColor3=Color3.fromRGB(30,0,0); top.BorderSizePixel=0; top.ZIndex = 2; Instance.new("UICorner",top).CornerRadius=UDim.new(0,10)
+local ti=Instance.new("TextLabel", top); ti.Size=UDim2.new(1,-100,1,0); ti.Position=UDim2.new(0,12,0,0); ti.BackgroundTransparency=1; ti.Text="💀 MICHAELXITADOO 🩸"; ti.TextXAlignment=Enum.TextXAlignment.Left; ti.Font=Enum.Font.GothamBlack; ti.TextSize=16; ti.TextColor3=Color3.fromRGB(255,0,0); ti.ZIndex = 3
+local close = Instance.new("TextButton", top); close.Size=UDim2.new(0,25,0,25); close.Position=UDim2.new(1,-32,0.5,-12); close.Text="X"; close.BackgroundColor3=Color3.fromRGB(150,0,0); close.TextColor3=Color3.fromRGB(255,255,255); close.Font=Enum.Font.GothamBold; close.ZIndex = 3; Instance.new("UICorner",close).CornerRadius=UDim.new(0,5)
 close.MouseButton1Click:Connect(function() DisableAll() gui:Destroy() end)
-local minBtn = Instance.new("TextButton", top); minBtn.Size=UDim2.new(0,25,0,25); minBtn.Position=UDim2.new(1,-62,0.5,-12); minBtn.Text="-"; minBtn.BackgroundColor3=Color3.fromRGB(40,30,50); minBtn.TextColor3=Color3.fromRGB(255,105,180); minBtn.Font=Enum.Font.GothamBold; minBtn.ZIndex = 3; Instance.new("UICorner",minBtn).CornerRadius=UDim.new(0,5)
+local minBtn = Instance.new("TextButton", top); minBtn.Size=UDim2.new(0,25,0,25); minBtn.Position=UDim2.new(1,-62,0.5,-12); minBtn.Text="-"; minBtn.BackgroundColor3=Color3.fromRGB(20,0,0); minBtn.TextColor3=Color3.fromRGB(255,0,0); minBtn.Font=Enum.Font.GothamBold; minBtn.ZIndex = 3; Instance.new("UICorner",minBtn).CornerRadius=UDim.new(0,5)
 minBtn.MouseButton1Click:Connect(function() pan.Visible=false; bol.Visible=true end)
 
-scr=Instance.new("ScrollingFrame", pan); scr.Size=UDim2.new(1,-12,1,-70); scr.Position=UDim2.new(0,6,0,60); scr.BackgroundTransparency=1; scr.BorderSizePixel=0; scr.ScrollBarThickness=3; scr.ScrollBarImageColor3=Color3.fromRGB(255,105,180); scr.CanvasSize=UDim2.new(0,0,0,600); scr.ZIndex = 2
+scr=Instance.new("ScrollingFrame", pan); scr.Size=UDim2.new(1,-12,1,-70); scr.Position=UDim2.new(0,6,0,60); scr.BackgroundTransparency=1; scr.BorderSizePixel=0; scr.ScrollBarThickness=3; scr.ScrollBarImageColor3=Color3.fromRGB(255,0,0); scr.CanvasSize=UDim2.new(0,0,0,600); scr.ZIndex = 2
 
 local function makeBtn(txt, y, key, cb)
-    local b = Instance.new("TextButton", scr); b.Size=UDim2.new(0.9,0,0,35); b.Position=UDim2.new(0.05,0,0,y); b.Text=txt; b.BackgroundColor3=Color3.fromRGB(40, 30, 50); b.TextColor3=Color3.fromRGB(255,255,255); b.Font=Enum.Font.GothamBold; b.TextSize=13; b.TextXAlignment=Enum.TextXAlignment.Left; b.ZIndex = 3
-    local pad = Instance.new("UIPadding", b); pad.PaddingLeft = UDim.new(0,10); Instance.new("UICorner", b).CornerRadius = UDim.new(0,8)
-    local stroke = Instance.new("UIStroke", b); stroke.Color = Color3.fromRGB(80, 50, 100); stroke.Thickness = 1.5
+    local b = Instance.new("TextButton", scr); b.Size=UDim2.new(0.9,0,0,35); b.Position=UDim2.new(0.05,0,0,y); b.Text=txt; b.BackgroundColor3=Color3.fromRGB(20, 5, 5); b.TextColor3=Color3.fromRGB(150,150,150); b.Font=Enum.Font.GothamBlack; b.TextSize=13; b.TextXAlignment=Enum.TextXAlignment.Left; b.ZIndex = 3
+    local pad = Instance.new("UIPadding", b); pad.PaddingLeft = UDim.new(0,10); Instance.new("UICorner", b).CornerRadius = UDim.new(0,6)
+    local stroke = Instance.new("UIStroke", b); stroke.Color = Color3.fromRGB(60, 0, 0); stroke.Thickness = 1
     toggles[key] = b
     b.MouseButton1Click:Connect(function()
         local on = not c[key]
         c[key] = on
+        TweenService:Create(b, TweenInfo.new(0.2), {BackgroundColor3 = on and Color3.fromRGB(150,0,0) or Color3.fromRGB(20,5,5)}):Play()
+        TweenService:Create(b, TweenInfo.new(0.2), {TextColor3 = on and Color3.fromRGB(255,255,255) or Color3.fromRGB(150,150,150)}):Play()
+        TweenService:Create(stroke, TweenInfo.new(0.2), {Color = on and Color3.fromRGB(255,0,0) or Color3.fromRGB(60,0,0)}):Play()
         
-        -- Animação de cor fofa
-        TweenService:Create(b, TweenInfo.new(0.2), {BackgroundColor3 = on and Color3.fromRGB(255,105,180) or Color3.fromRGB(40,30,50)}):Play()
-        TweenService:Create(stroke, TweenInfo.new(0.2), {Color = on and Color3.fromRGB(255,255,255) or Color3.fromRGB(80,50,100)}):Play()
-        
-        if on then Notify("XIT-INSERIDO 💖", true) else Notify("XIT-REMOVIDO 🥺", false) end
+        if on then Notify("XIT-INSERIDO 💀", true) else Notify("XIT-REMOVIDO 🩸", false) end
         if cb then cb(on) end
     end)
 end
 
-makeBtn("AIMBOT (AUTO SHOOT)", 10, "Aimbot")
+makeBtn("AIMBOT (SUAVE)", 10, "Aimbot")
 makeBtn("AUTO SHOOT (ATIRAR AUTO)", 55, "AutoShoot")
 makeBtn("ESP (VER INIMIGOS)", 100, "ESP")
 makeBtn("HITBOX EXPANDER (HEAD)", 145, "Hitbox")
@@ -292,9 +297,9 @@ makeBtn("FULLBRIGHT (CLARIDADE)", 325, "Full")
 makeBtn("FPS BOOST (TIRAR LAG)", 370, "FpsBoost")
 makeBtn("NO RECOIL (SEM RECUO)", 415, "NoRecoil")
 
-bol = Instance.new("TextButton", gui); bol.Size=UDim2.new(0,65,0,65); bol.Position=UDim2.new(0.5, -32, 0, 20); bol.Text="👻"; bol.TextSize=35; bol.Font=Enum.Font.GothamBlack; bol.TextColor3=Color3.fromRGB(255,255,255); bol.Visible=false; bol.BackgroundColor3 = Color3.fromRGB(25, 15, 35)
+bol = Instance.new("TextButton", gui); bol.Size=UDim2.new(0,65,0,65); bol.Position=UDim2.new(0.5, -32, 0, 20); bol.Text="💀"; bol.TextSize=35; bol.Font=Enum.Font.GothamBlack; bol.TextColor3=Color3.fromRGB(255,255,255); bol.Visible=false; bol.BackgroundColor3 = Color3.fromRGB(10, 0, 0)
 Instance.new("UICorner",bol).CornerRadius=UDim.new(1,0)
-local bStroke = Instance.new("UIStroke", bol); bStroke.Color = Color3.fromRGB(255,105,180); bStroke.Thickness = 3
+local bStroke = Instance.new("UIStroke", bol); bStroke.Color = Color3.fromRGB(255,0,0); bStroke.Thickness = 3
 task.spawn(function() while bol.Parent do task.wait(0.5); TweenService:Create(bStroke, TweenInfo.new(0.5), {Transparency = 0.8}):Play(); task.wait(0.5); TweenService:Create(bStroke, TweenInfo.new(0.5), {Transparency = 0}):Play() end end)
 local bDrag, bStart, bStartPos = false, nil, nil
 bol.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then bDrag = true; bStart = i.Position; bStartPos = bol.Position end end)
@@ -306,4 +311,4 @@ top.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch 
 top.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end end)
 U.InputChanged:Connect(function(i) if drag and (i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseMovement) then local d=i.Position-sP; pan.Position=UDim2.new(sPos.X.Scale,sPos.X.Offset+d.X,sPos.Y.Scale,sPos.Y.Offset+d.Y) end end)
 
-print("MICHAELXITADOO CUTE CARREGADO!")
+print("MICHAELXITADOO UNIVERSAL CARREGADO!")
