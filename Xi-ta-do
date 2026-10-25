@@ -1,4 +1,4 @@
--- PAINEL MACABRO MICHAELXITADOO (LÓGICA v30 - HITBOX NORMAL 30X)
+-- PAINEL MACABRO MICHAELXITADOO (LÓGICA v31 - HITBOX 30X SEM CONGELAR)
 if getgenv().MontagneriXIT_Cleanup then pcall(getgenv().MontagneriXIT_Cleanup) end
 
 local P = game.Players.LocalPlayer
@@ -32,13 +32,14 @@ local function DisableAll()
         espTags[p] = nil
     end
     
-    -- Limpa as Bolhas de Hitbox
+    -- Restaura o corpo dos inimigos
     for _, p in ipairs(game.Players:GetPlayers()) do
         if p.Character then
-            local head = p.Character:FindFirstChild("Head")
-            if head then
-                local hb = head:FindFirstChild("HitboxBolha")
-                if hb then hb:Destroy() end
+            local hrp = p.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.Size = Vector3.new(2, 2, 1)
+                hrp.Transparency = 1
+                hrp.CanCollide = true
             end
         end
     end
@@ -80,7 +81,6 @@ end
 
 if lpA then lpA:Disconnect() end
 lpA = R.RenderStepped:Connect(function()
-    -- AIMBOT (Só a mira)
     if c.Aimbot then
         local target = getClosest()
         if target then
@@ -88,7 +88,6 @@ lpA = R.RenderStepped:Connect(function()
         end
     end
     
-    -- AUTO SHOOT
     if c.AutoShoot and ch then
         local target = getClosest()
         if target then
@@ -169,29 +168,21 @@ lpU = R.Heartbeat:Connect(function()
                     espTags[p] = nil
                 end
                 
-                -- HITBOX NORMAL (Bolha Invisível 30x - NÃO CONGELA)
-                local head = pCh:FindFirstChild("Head")
-                if head then
+                -- HITBOX 30X NO CORPO (NÃO CONGELA A ANIMAÇÃO)
+                local hrp = pCh:FindFirstChild("HumanoidRootPart")
+                if hrp then
                     if c.Hitbox then
-                        if not head:FindFirstChild("HitboxBolha") then
-                            local bolha = Instance.new("Part")
-                            bolha.Name = "HitboxBolha"
-                            bolha.Size = Vector3.new(30, 30, 30) -- Tamanho 30x
-                            bolha.Transparency = 1 -- Invisível
-                            bolha.CanCollide = false
-                            bolha.CanTouch = false
-                            bolha.CanQuery = true -- Permite que o tiro acerte
-                            bolha.Massless = true
-                            bolha.Parent = head
-                            
-                            local weld = Instance.new("WeldConstraint")
-                            weld.Part0 = bolha
-                            weld.Part1 = head
-                            weld.Parent = bolha
+                        if hrp.Size ~= Vector3.new(30, 30, 30) then
+                            hrp.Size = Vector3.new(30, 30, 30)
+                            hrp.Transparency = 1 -- Invisível
+                            hrp.CanCollide = false -- Não atrapalha o movimento deles
                         end
                     else
-                        local hb = head:FindFirstChild("HitboxBolha")
-                        if hb then hb:Destroy() end
+                        if hrp.Size ~= Vector3.new(2, 2, 1) then
+                            hrp.Size = Vector3.new(2, 2, 1)
+                            hrp.Transparency = 1
+                            hrp.CanCollide = true
+                        end
                     end
                 end
             end
@@ -276,7 +267,7 @@ local function makeBtn(txt, y, key, cb)
 end
 
 makeBtn("AIMBOT (TRAVA MIRA)", 10, "Aimbot")
-makeBtn("HITBOX NORMAL (30X)", 55, "Hitbox")
+makeBtn("HITBOX NORMAL 30X", 55, "Hitbox")
 makeBtn("AUTO SHOOT (ATIRAR AUTO)", 100, "AutoShoot")
 makeBtn("ESP (VER INIMIGOS)", 145, "ESP")
 makeBtn("SPEED", 190, "Spd")
@@ -301,4 +292,4 @@ top.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch 
 top.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end end)
 U.InputChanged:Connect(function(i) if drag and (i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseMovement) then local d=i.Position-sP; pan.Position=UDim2.new(sPos.X.Scale,sPos.X.Offset+d.X,sPos.Y.Scale,sPos.Y.Offset+d.Y) end end)
 
-print("MICHAELXITADOO v30 CARREGADO COM SUCESSO!")
+print("MICHAELXITADOO v31 CARREGADO COM SUCESSO!")
