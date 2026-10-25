@@ -1,4 +1,4 @@
--- PAINEL MACABRO MICHAELXITADOO (LÓGICA FINAL v25 - VOLTOU A FUNCIONAR)
+-- PAINEL MACABRO MICHAELXITADOO (LÓGICA v26 - DUPLO AIMBOT)
 if getgenv().MontagneriXIT_Cleanup then pcall(getgenv().MontagneriXIT_Cleanup) end
 
 local P = game.Players.LocalPlayer
@@ -8,7 +8,8 @@ local W = game:GetService("Workspace")
 local L = game:GetService("Lighting")
 local Cam = W.CurrentCamera
 
-local c = {Aimbot=false, ESP=false, Hitbox=false, Spd=false, Jmp=false, Full=false, AutoShoot=false, InfJump=false, Fly=false, FpsBoost=false, NoRecoil=false, AntiHack=false, FOV=150, Vel=50, JumpPower=100}
+-- Adicionado AimbotNormal e AimbotCongelar
+local c = {AimbotNormal=false, AimbotCongelar=false, ESP=false, Spd=false, Jmp=false, Full=false, AutoShoot=false, InfJump=false, Fly=false, FpsBoost=false, NoRecoil=false, AntiHack=false, FOV=150, Vel=50, JumpPower=100}
 local gui, pan, top, scr, bol, ch, hu, rt, bv, bav
 local lpA, lpU
 local espTags = {}
@@ -81,10 +82,14 @@ end
 
 if lpA then lpA:Disconnect() end
 lpA = R.RenderStepped:Connect(function()
-    if c.Aimbot then
+    -- Se qualquer um dos dois Aimbots estiver ativo, puxa a mira
+    if c.AimbotNormal or c.AimbotCongelar then
         local target = getClosest()
         if target then
+            -- Trava na cabeça
             Cam.CFrame = CFrame.new(Cam.CFrame.Position, target.Position)
+            
+            -- Atira automático
             if c.AutoShoot and ch then
                 local tool = ch:FindFirstChildOfClass("Tool")
                 if tool then pcall(function() tool:Activate() end) end
@@ -120,7 +125,6 @@ lpU = R.Heartbeat:Connect(function()
         if hu.PlatformStand then hu.PlatformStand = false end
     end
 
-    -- ANTI-HACK CORRIGIDO (Desliga o AutoRotate e força o giro)
     if ch then
         if c.AntiHack then
             hu.AutoRotate = false
@@ -165,16 +169,18 @@ lpU = R.Heartbeat:Connect(function()
                     espTags[p] = nil
                 end
                 
-                -- HITBOX APENAS NA CABEÇA (Método antigo que funcionava)
+                -- HITBOX (Aumentada para 30x)
                 local head = pCh:FindFirstChild("Head")
                 if head then
-                    if c.Hitbox then
-                        if head.Size ~= Vector3.new(10, 10, 10) then
-                            head.Size = Vector3.new(10, 10, 10)
-                            head.Transparency = 0.5 -- Fica transparente para você ver a hitbox funcionando
+                    if c.AimbotCongelar then
+                        -- Modo Congelar (Hitbox 30)
+                        if head.Size ~= Vector3.new(30, 30, 30) then
+                            head.Size = Vector3.new(30, 30, 30)
+                            head.Transparency = 0.5
                             head.CanCollide = false
                         end
                     else
+                        -- Modo Normal (Hitbox Normal)
                         if head.Size ~= Vector3.new(2, 1, 1) then
                             head.Size = Vector3.new(2, 1, 1)
                             head.Transparency = 0
@@ -258,15 +264,24 @@ local function makeBtn(txt, y, key, cb)
         TweenService:Create(b, TweenInfo.new(0.2), {TextColor3 = on and Color3.fromRGB(255,255,255) or Color3.fromRGB(150,150,150)}):Play()
         TweenService:Create(stroke, TweenInfo.new(0.2), {Color = on and Color3.fromRGB(255,0,0) or Color3.fromRGB(60,0,0)}):Play()
         
+        -- Se ligar um aimbot, desliga o outro automaticamente
+        if key == "AimbotNormal" and on then
+            c.AimbotCongelar = false
+            if toggles.AimbotCongelar then toggles.AimbotCongelar.BackgroundColor3 = Color3.fromRGB(20,5,5) end
+        elseif key == "AimbotCongelar" and on then
+            c.AimbotNormal = false
+            if toggles.AimbotNormal then toggles.AimbotNormal.BackgroundColor3 = Color3.fromRGB(20,5,5) end
+        end
+        
         if on then Notify("XIT-INSERIDO 💀", true) else Notify("XIT-REMOVIDO 🩸", false) end
         if cb then cb(on) end
     end)
 end
 
-makeBtn("AIMBOT (SUAVE)", 10, "Aimbot")
-makeBtn("AUTO SHOOT (ATIRAR AUTO)", 55, "AutoShoot")
-makeBtn("ESP (VER INIMIGOS)", 100, "ESP")
-makeBtn("HITBOX EXPANDER (HEAD)", 145, "Hitbox")
+makeBtn("AIMBOT CONGELAR (30X)", 10, "AimbotCongelar")
+makeBtn("AIMBOT NORMAL (SEM CONGELAR)", 55, "AimbotNormal")
+makeBtn("AUTO SHOOT (ATIRAR AUTO)", 100, "AutoShoot")
+makeBtn("ESP (VER INIMIGOS)", 145, "ESP")
 makeBtn("SPEED", 190, "Spd")
 makeBtn("INFINITE JUMP (PULO INF)", 235, "InfJump")
 makeBtn("FLY (VOAR)", 280, "Fly")
@@ -289,4 +304,4 @@ top.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch 
 top.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end end)
 U.InputChanged:Connect(function(i) if drag and (i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseMovement) then local d=i.Position-sP; pan.Position=UDim2.new(sPos.X.Scale,sPos.X.Offset+d.X,sPos.Y.Scale,sPos.Y.Offset+d.Y) end end)
 
-print("MICHAELXITADOO v25 CARREGADO COM SUCESSO!")
+print("MICHAELXITADOO v26 CARREGADO COM SUCESSO!")
