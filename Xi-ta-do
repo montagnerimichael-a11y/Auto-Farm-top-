@@ -1,4 +1,4 @@
--- PAINEL MACABRO (LÓGICA FINAL v4)
+-- PAINEL MACABRO MICHAELXITADOO (LÓGICA FINAL)
 if getgenv().MontagneriXIT_Cleanup then pcall(getgenv().MontagneriXIT_Cleanup) end
 
 local P = game.Players.LocalPlayer
@@ -14,18 +14,19 @@ local gui, pan, top, scr, bol, ch, hu, rt, bv
 local lpA, lpU
 local espTags = {}
 local toggles = {}
+local aiming = false 
 
 local FF = {Bg=Color3.fromRGB(10, 0, 0), Top=Color3.fromRGB(30, 0, 0), Neon=Color3.fromRGB(255,0,0), Text=Color3.fromRGB(255,255,255), Btn=Color3.fromRGB(20, 5, 5), On=Color3.fromRGB(150,0,0), Off=Color3.fromRGB(20,5,5)}
 
 local function uC() ch=P.Character; hu=ch and ch:FindFirstChildOfClass("Humanoid"); rt=ch and ch:FindFirstChild("HumanoidRootPart") end
 
--- FUNÇÃO DE LIMPAR TUDO
 local function DisableAll()
     for k, _ in pairs(c) do if type(c[k]) == "boolean" then c[k] = false end end
     uC()
     if hu then hu.WalkSpeed = 16; hu.JumpPower = 50; hu.UseJumpPower = false end
     if bv then bv:Destroy() bv = nil end
     L.Ambient = Color3.fromRGB(70,70,70); L.OutdoorAmbient = Color3.fromRGB(128,128,128); L.GlobalShadows = true
+    aiming = false
     
     for p, t in pairs(espTags) do
         if t.hl then t.hl:Destroy() end
@@ -35,8 +36,10 @@ local function DisableAll()
     
     for _, p in ipairs(game.Players:GetPlayers()) do
         if p ~= P and p.Character then
-            local hb = p.Character:FindFirstChild("InvisibleHitbox")
-            if hb then hb:Destroy() end
+            local head = p.Character:FindFirstChild("Head")
+            local hrp = p.Character:FindFirstChild("HumanoidRootPart")
+            if head then head.Size = Vector3.new(2, 1, 1); head.Transparency = 0; head.CanCollide = true end
+            if hrp then hrp.Size = Vector3.new(2, 2, 1); hrp.Transparency = 1; hrp.CanCollide = true end
         end
     end
     
@@ -49,7 +52,6 @@ local function DisableAll()
 end
 getgenv().MontagneriXIT_Cleanup = DisableAll
 
--- VERIFICA SE O INIMIGO ESTÁ NA VISÃO (SEM PAREDES)
 local function isVisible(target)
     local origin = Cam.CFrame.Position
     local direction = target.Position - origin
@@ -60,7 +62,6 @@ local function isVisible(target)
     return result == nil 
 end
 
--- AIMBOT
 local function getClosest()
     local closest, dist = nil, math.huge
     local center = Vector2.new(Cam.ViewportSize.X/2, Cam.ViewportSize.Y/2)
@@ -68,7 +69,6 @@ local function getClosest()
         if p ~= P and p.Character and p.Character:FindFirstChild("Head") and p.Character:FindFirstChildOfClass("Humanoid") and p.Character.Humanoid.Health > 0 then
             local head = p.Character.Head
             local screenPos, onScreen = Cam:WorldToViewportPoint(head.Position)
-            
             if onScreen and isVisible(head) then
                 local d = (Vector2.new(screenPos.X, screenPos.Y) - center).Magnitude
                 if d < c.FOV and d < dist then dist = d; closest = head end
@@ -80,10 +80,12 @@ end
 
 if lpA then lpA:Disconnect() end
 lpA = R.RenderStepped:Connect(function()
-    if c.Aimbot then
+    if c.Aimbot and aiming then
         local target = getClosest()
         if target then
-            Cam.CFrame = CFrame.new(Cam.CFrame.Position, target.Position)
+            local targetCFrame = CFrame.new(Cam.CFrame.Position, target.Position)
+            Cam.CFrame = Cam.CFrame:Lerp(targetCFrame, 0.15)
+            
             if c.AutoShoot then
                 pcall(function() VIM:SendMouseButtonEvent(Cam.ViewportSize.X/2, Cam.ViewportSize.Y/2, 0, true, game, 1) end)
                 task.wait(0.05)
@@ -93,13 +95,11 @@ lpA = R.RenderStepped:Connect(function()
     end
 end)
 
--- RECONEXÃO AO MORRER
 P.CharacterAdded:Connect(function(newChar)
     task.wait(1)
     ch = newChar
     hu = ch:FindFirstChildOfClass("Humanoid")
     rt = ch:FindFirstChild("HumanoidRootPart")
-    
     if hu then
         hu.StateChanged:Connect(function(old, new)
             if c.InfJump and new == Enum.HumanoidStateType.Landed then hu:ChangeState(Enum.HumanoidStateType.Jumping) end
@@ -108,7 +108,6 @@ P.CharacterAdded:Connect(function(newChar)
     end
 end)
 
--- LOOP PRINCIPAL
 if lpU then lpU:Disconnect() end
 lpU = R.Heartbeat:Connect(function()
     uC()
@@ -156,23 +155,26 @@ lpU = R.Heartbeat:Connect(function()
                     espTags[p].hl:Destroy(); espTags[p].bb:Destroy(); espTags[p] = nil
                 end
                 
-                if c.Hitbox then
-                    if not pCh:FindFirstChild("InvisibleHitbox") then
-                        local hb = Instance.new("Part", pCh)
-                        hb.Name = "InvisibleHitbox"
-                        hb.Size = Vector3.new(12, 12, 12)
-                        hb.Transparency = 1
-                        hb.CanCollide = false
-                        hb.Massless = true
-                        hb.CanQuery = true
-                        hb.CanTouch = false
-                        local weld = Instance.new("Weld", hb)
-                        weld.Part0 = hb
-                        weld.Part1 = pCh:FindFirstChild("Head") or pCh:FindFirstChild("HumanoidRootPart")
+                local head = pCh:FindFirstChild("Head")
+                local hrp = pCh:FindFirstChild("HumanoidRootPart")
+                if head and hrp then
+                    if c.Hitbox then
+                        head.Size = Vector3.new(30, 30, 30)
+                        head.Transparency = 0.5
+                        head.CanCollide = false
+                        
+                        hrp.Size = Vector3.new(30, 30, 30)
+                        hrp.Transparency = 1
+                        hrp.CanCollide = false
+                    else
+                        head.Size = Vector3.new(2, 1, 1)
+                        head.Transparency = 0
+                        head.CanCollide = true
+                        
+                        hrp.Size = Vector3.new(2, 2, 1)
+                        hrp.Transparency = 1
+                        hrp.CanCollide = true
                     end
-                else
-                    local hb = pCh:FindFirstChild("InvisibleHitbox")
-                    if hb then hb:Destroy() end
                 end
             end
         end
@@ -184,117 +186,65 @@ task.spawn(function()
         pcall(function() VIM:SendKeyEvent(true, "W", false, game); task.wait(0.1); VIM:SendKeyEvent(false, "W", false, game) end)
     end
 end)
--- INTERFACE MACABRA + TELA DE CARREGAMENTO
+-- INTERFACE MACABRA + CARREGAMENTO + NOTIFICAÇÕES XIT
 local TweenService = game:GetService("TweenService")
 
--- 1. TELA DE CARREGAMENTO 🩸
 local loadGui = Instance.new("ScreenGui", P.PlayerGui)
-loadGui.Name = "LoadingMichael"
-loadGui.ResetOnSpawn = false
+loadGui.Name = "LoadingMichael"; loadGui.ResetOnSpawn = false
+local loadBg = Instance.new("Frame", loadGui); loadBg.Size = UDim2.new(1, 0, 1, 0); loadBg.BackgroundColor3 = Color3.fromRGB(0, 0, 0); loadBg.BorderSizePixel = 0; loadBg.ZIndex = 999
 
-local loadBg = Instance.new("Frame", loadGui)
-loadBg.Size = UDim2.new(1, 0, 1, 0)
-loadBg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-loadBg.BorderSizePixel = 0
-loadBg.ZIndex = 999
+local loadText = Instance.new("TextLabel", loadBg); loadText.Size = UDim2.new(1, 0, 0, 50); loadText.Position = UDim2.new(0, 0, 0.4, 0); loadText.BackgroundTransparency = 1; loadText.Text = "!MICHAELXITADOO!"; loadText.TextColor3 = Color3.fromRGB(255, 0, 0); loadText.Font = Enum.Font.GothamBlack; loadText.TextSize = 35; loadText.ZIndex = 1000
 
-local loadText = Instance.new("TextLabel", loadBg)
-loadText.Size = UDim2.new(1, 0, 0, 50)
-loadText.Position = UDim2.new(0, 0, 0.4, 0)
-loadText.BackgroundTransparency = 1
-loadText.Text = "!MICHAELXITADOO!"
-loadText.TextColor3 = Color3.fromRGB(255, 0, 0)
-loadText.Font = Enum.Font.GothamBlack
-loadText.TextSize = 30
-loadText.ZIndex = 1000
+local barBg = Instance.new("Frame", loadBg); barBg.Size = UDim2.new(0, 300, 0, 15); barBg.Position = UDim2.new(0.5, -150, 0.5, 30); barBg.BackgroundColor3 = Color3.fromRGB(30, 0, 0); barBg.BorderSizePixel = 0; barBg.ZIndex = 1000; Instance.new("UICorner", barBg).CornerRadius = UDim.new(1, 0)
+local barFill = Instance.new("Frame", barBg); barFill.Size = UDim2.new(0, 0, 1, 0); barFill.BackgroundColor3 = Color3.fromRGB(200, 0, 0); barFill.BorderSizePixel = 0; barFill.ZIndex = 1001; Instance.new("UICorner", barFill).CornerRadius = UDim.new(1, 0)
 
-local barBg = Instance.new("Frame", loadBg)
-barBg.Size = UDim2.new(0, 300, 0, 15)
-barBg.Position = UDim2.new(0.5, -150, 0.5, 20)
-barBg.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
-barBg.BorderSizePixel = 0
-barBg.ZIndex = 1000
-Instance.new("UICorner", barBg).CornerRadius = UDim.new(1, 0)
-
-local barFill = Instance.new("Frame", barBg)
-barFill.Size = UDim2.new(0, 0, 1, 0)
-barFill.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-barFill.BorderSizePixel = 0
-barFill.ZIndex = 1001
-Instance.new("UICorner", barFill).CornerRadius = UDim.new(1, 0)
-
--- Animação da barra (4 segundos)
 TweenService:Create(barFill, TweenInfo.new(4, Enum.EasingStyle.Linear), {Size = UDim2.new(1, 0, 1, 0)}):Play()
 
--- Espera 4 segundos e destrói a tela de loading
+task.delay(1.5, function() 
+    loadText.Text = "QUASE-LÁ..." 
+    loadText.TextColor3 = Color3.fromRGB(255, 200, 0)
+end)
+
+task.delay(3.5, function() 
+    loadText.Text = "HACK-ATIVADO" 
+    loadText.TextColor3 = Color3.fromRGB(0, 255, 0)
+    loadText.TextSize = 40
+end)
+
 task.wait(4)
 loadGui:Destroy()
 
--- 2. INTERFACE PRINCIPAL
 gui = Instance.new("ScreenGui", P.PlayerGui); gui.Name="MichaelXitado"; gui.ResetOnSpawn=false
 
 local function Notify(txt, isOn)
     for _, child in pairs(gui:GetChildren()) do if child.Name == "Notification" then child:Destroy() end end
-    local notif = Instance.new("Frame", gui)
-    notif.Name = "Notification"
-    notif.Size = UDim2.new(0, 250, 0, 50)
-    notif.Position = UDim2.new(0.5, -125, 0, -60)
-    notif.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
-    notif.BorderSizePixel = 0
-    notif.ZIndex = 100
+    local notif = Instance.new("Frame", gui); notif.Name = "Notification"; notif.Size = UDim2.new(0, 250, 0, 50); notif.Position = UDim2.new(0.5, -125, 0, -60); notif.BackgroundColor3 = Color3.fromRGB(20, 0, 0); notif.BorderSizePixel = 0; notif.ZIndex = 100
     Instance.new("UICorner", notif).CornerRadius = UDim.new(0, 8)
     
-    local stroke = Instance.new("UIStroke", notif)
-    stroke.Color = Color3.fromRGB(255, 0, 0)
-    stroke.Thickness = 2
-
-    local label = Instance.new("TextLabel", notif)
-    label.Size = UDim2.new(1, 0, 1, 0)
-    label.BackgroundTransparency = 1
-    label.Text = txt
-    label.TextColor3 = Color3.fromRGB(255, 50, 50)
-    label.Font = Enum.Font.GothamBlack
-    label.TextSize = 14
-    label.ZIndex = 101
-
+    local stroke = Instance.new("UIStroke", notif); stroke.Color = isOn and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 100, 100); stroke.Thickness = 2
+    
+    local label = Instance.new("TextLabel", notif); label.Size = UDim2.new(1, 0, 1, 0); label.BackgroundTransparency = 1; label.Text = txt; label.TextColor3 = isOn and Color3.fromRGB(255, 50, 50) or Color3.fromRGB(150, 150, 150); label.Font = Enum.Font.GothamBlack; label.TextSize = 14; label.ZIndex = 101
+    
     TweenService:Create(notif, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -125, 0, 50)}):Play()
-
-    task.delay(3.5, function()
-        if notif and notif.Parent then
-            local tweenOut = TweenService:Create(notif, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -125, 0, -60)})
-            tweenOut:Play()
-            tweenOut.Completed:Connect(function() notif:Destroy() end)
-        end
-    end)
+    task.delay(3.5, function() if notif and notif.Parent then local tweenOut = TweenService:Create(notif, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -125, 0, -60)}); tweenOut:Play(); tweenOut.Completed:Connect(function() notif:Destroy() end) end end)
 end
 
--- PAINEL NO CANTO SUPERIOR DIREITO
 pan=Instance.new("Frame", gui); pan.Size=UDim2.new(0,280,0,420); pan.Position=UDim2.new(1,-290,0,20); pan.BackgroundColor3=Color3.fromRGB(10, 0, 0); pan.BorderSizePixel=0; pan.ClipsDescendants = true
 Instance.new("UICorner",pan).CornerRadius=UDim.new(0,10)
-
--- M GIGANTE DE FUNDO (SANGUE)
 local bgM = Instance.new("TextLabel", pan); bgM.Size = UDim2.new(1, 0, 1, 0); bgM.BackgroundTransparency = 1; bgM.Text = "M"; bgM.TextColor3 = Color3.fromRGB(50, 0, 0); bgM.TextTransparency = 0.4; bgM.TextScaled = true; bgM.Font = Enum.Font.GothamBlack; bgM.ZIndex = 1; bgM.Position = UDim2.new(0, 0, 0.1, 0)
 
--- TOPO MACABRO
-top=Instance.new("Frame", pan); top.Size=UDim2.new(1,0,0,50); top.BackgroundColor3=Color3.fromRGB(30,0,0); top.BorderSizePixel=0; top.ZIndex = 2
-Instance.new("UICorner",top).CornerRadius=UDim.new(0,10)
-
+top=Instance.new("Frame", pan); top.Size=UDim2.new(1,0,0,50); top.BackgroundColor3=Color3.fromRGB(30,0,0); top.BorderSizePixel=0; top.ZIndex = 2; Instance.new("UICorner",top).CornerRadius=UDim.new(0,10)
 local ti=Instance.new("TextLabel", top); ti.Size=UDim2.new(1,-100,1,0); ti.Position=UDim2.new(0,12,0,0); ti.BackgroundTransparency=1; ti.Text="💀 MICHAELXITADOO 🩸"; ti.TextXAlignment=Enum.TextXAlignment.Left; ti.Font=Enum.Font.GothamBlack; ti.TextSize=16; ti.TextColor3=Color3.fromRGB(255,0,0); ti.ZIndex = 3
-
-local close = Instance.new("TextButton", top); close.Size=UDim2.new(0,25,0,25); close.Position=UDim2.new(1,-32,0.5,-12); close.Text="X"; close.BackgroundColor3=Color3.fromRGB(150,0,0); close.TextColor3=Color3.fromRGB(255,255,255); close.Font=Enum.Font.GothamBold; close.ZIndex = 3
-Instance.new("UICorner",close).CornerRadius=UDim.new(0,5)
+local close = Instance.new("TextButton", top); close.Size=UDim2.new(0,25,0,25); close.Position=UDim2.new(1,-32,0.5,-12); close.Text="X"; close.BackgroundColor3=Color3.fromRGB(150,0,0); close.TextColor3=Color3.fromRGB(255,255,255); close.Font=Enum.Font.GothamBold; close.ZIndex = 3; Instance.new("UICorner",close).CornerRadius=UDim.new(0,5)
 close.MouseButton1Click:Connect(function() DisableAll() gui:Destroy() end)
-
-local minBtn = Instance.new("TextButton", top); minBtn.Size=UDim2.new(0,25,0,25); minBtn.Position=UDim2.new(1,-62,0.5,-12); minBtn.Text="-"; minBtn.BackgroundColor3=Color3.fromRGB(20,0,0); minBtn.TextColor3=Color3.fromRGB(255,255,255); minBtn.Font=Enum.Font.GothamBold; minBtn.ZIndex = 3
-Instance.new("UICorner",minBtn).CornerRadius=UDim.new(0,5)
+local minBtn = Instance.new("TextButton", top); minBtn.Size=UDim2.new(0,25,0,25); minBtn.Position=UDim2.new(1,-62,0.5,-12); minBtn.Text="-"; minBtn.BackgroundColor3=Color3.fromRGB(20,0,0); minBtn.TextColor3=Color3.fromRGB(255,255,255); minBtn.Font=Enum.Font.GothamBold; minBtn.ZIndex = 3; Instance.new("UICorner",minBtn).CornerRadius=UDim.new(0,5)
 minBtn.MouseButton1Click:Connect(function() pan.Visible=false; bol.Visible=true end)
 
 scr=Instance.new("ScrollingFrame", pan); scr.Size=UDim2.new(1,-12,1,-70); scr.Position=UDim2.new(0,6,0,60); scr.BackgroundTransparency=1; scr.BorderSizePixel=0; scr.ScrollBarThickness=3; scr.ScrollBarImageColor3=Color3.fromRGB(255,0,0); scr.CanvasSize=UDim2.new(0,0,0,600); scr.ZIndex = 2
 
 local function makeBtn(txt, y, key, cb)
     local b = Instance.new("TextButton", scr); b.Size=UDim2.new(0.9,0,0,35); b.Position=UDim2.new(0.05,0,0,y); b.Text=txt.."  [ OFF ]"; b.BackgroundColor3=Color3.fromRGB(20, 5, 5); b.TextColor3=Color3.fromRGB(150,150,150); b.Font=Enum.Font.GothamBlack; b.TextSize=13; b.TextXAlignment=Enum.TextXAlignment.Left; b.ZIndex = 3
-    local pad = Instance.new("UIPadding", b); pad.PaddingLeft = UDim.new(0,10)
-    Instance.new("UICorner", b).CornerRadius = UDim.new(0,6)
+    local pad = Instance.new("UIPadding", b); pad.PaddingLeft = UDim.new(0,10); Instance.new("UICorner", b).CornerRadius = UDim.new(0,6)
     local stroke = Instance.new("UIStroke", b); stroke.Color = Color3.fromRGB(80, 0, 0); stroke.Thickness = 1
     toggles[key] = b
     b.MouseButton1Click:Connect(function()
@@ -304,7 +254,7 @@ local function makeBtn(txt, y, key, cb)
         b.BackgroundColor3 = on and Color3.fromRGB(150,0,0) or Color3.fromRGB(20,5,5)
         b.TextColor3 = on and Color3.fromRGB(255,255,255) or Color3.fromRGB(150,150,150)
         
-        if on then Notify("FUNÇÃO ATIVADA! 👍", true) else Notify("FUNÇÃO DESATIVADA! 🛑", false) end
+        if on then Notify("XIT-INSERIDO", true) else Notify("XIT-REMOVIDO", false) end
         if cb then cb(on) end
     end)
 end
@@ -320,20 +270,48 @@ makeBtn("FULLBRIGHT (CLARIDADE)", 325, "Full")
 makeBtn("FPS BOOST (TIRAR LAG)", 370, "FpsBoost")
 makeBtn("NO RECOIL (SEM RECUO)", 415, "NoRecoil")
 
--- BOLINHA CAVEIRA MACABRA
 bol = Instance.new("TextButton", gui); bol.Size=UDim2.new(0,65,0,65); bol.Position=UDim2.new(0.5, -32, 0, 20); bol.Text="💀"; bol.TextSize=35; bol.Font=Enum.Font.GothamBlack; bol.TextColor3=Color3.fromRGB(255,255,255); bol.Visible=false; bol.BackgroundColor3 = Color3.fromRGB(10, 0, 0)
 Instance.new("UICorner",bol).CornerRadius=UDim.new(1,0)
 local bStroke = Instance.new("UIStroke", bol); bStroke.Color = Color3.fromRGB(255,0,0); bStroke.Thickness = 3
 task.spawn(function() while bol.Parent do task.wait(0.5); TweenService:Create(bStroke, TweenInfo.new(0.5), {Transparency = 0.8}):Play(); task.wait(0.5); TweenService:Create(bStroke, TweenInfo.new(0.5), {Transparency = 0}):Play() end end)
-
-local bDrag = false; local bStart, bStartPos
+local bDrag, bStart, bStartPos = false, nil, nil
 bol.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then bDrag = true; bStart = i.Position; bStartPos = bol.Position end end)
 bol.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then if bDrag then if (i.Position - bStart).Magnitude < 10 then pan.Visible = true; bol.Visible = false end; bDrag = false end end end)
 U.InputChanged:Connect(function(i) if bDrag and (i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseMovement) then local d = i.Position - bStart; bol.Position = UDim2.new(bStartPos.X.Scale, bStartPos.X.Offset + d.X, bStartPos.Y.Scale, bStartPos.Y.Offset + d.Y) end end)
 
-local drag = false; local sP, sPos
+local aimBtn = Instance.new("TextButton", gui)
+aimBtn.Size = UDim2.new(0, 80, 0, 80)
+aimBtn.Position = UDim2.new(1, -100, 1, -100)
+aimBtn.Text = "🎯\nMIRAR"
+aimBtn.Font = Enum.Font.GothamBlack
+aimBtn.TextSize = 14
+aimBtn.TextColor3 = Color3.fromRGB(255,255,255)
+aimBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+aimBtn.BackgroundTransparency = 0.3
+aimBtn.ZIndex = 50
+Instance.new("UICorner", aimBtn).CornerRadius = UDim.new(1, 0)
+local aimStroke = Instance.new("UIStroke", aimBtn)
+aimStroke.Color = Color3.fromRGB(255, 0, 0)
+aimStroke.Thickness = 3
+
+aimBtn.InputBegan:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then
+        aiming = true
+        aimBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        aimBtn.BackgroundTransparency = 0
+    end
+end)
+aimBtn.InputEnded:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then
+        aiming = false
+        aimBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+        aimBtn.BackgroundTransparency = 0.3
+    end
+end)
+
+local drag, sP, sPos = false, nil, nil
 top.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then drag=true; sP=i.Position; sPos=pan.Position end end)
 top.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end end)
 U.InputChanged:Connect(function(i) if drag and (i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseMovement) then local d=i.Position-sP; pan.Position=UDim2.new(sPos.X.Scale,sPos.X.Offset+d.X,sPos.Y.Scale,sPos.Y.Offset+d.Y) end end)
 
-print("MICHAELXITADOO MACABRO CARREGADO!")
+print("MICHAELXITADOO v8 CARREGADO!")
