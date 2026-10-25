@@ -1,4 +1,4 @@
--- PAINEL MACABRO MICHAELXITADOO (LÓGICA FINAL v15 - ANTI-HACK)
+-- PAINEL MACABRO MICHAELXITADOO (LÓGICA FINAL v16 - FIX CHÃO E HITBOX)
 if getgenv().MontagneriXIT_Cleanup then pcall(getgenv().MontagneriXIT_Cleanup) end
 
 local P = game.Players.LocalPlayer
@@ -9,8 +9,8 @@ local L = game:GetService("Lighting")
 local Cam = W.CurrentCamera
 
 local c = {Aimbot=false, ESP=false, Hitbox=false, Spd=false, Jmp=false, Full=false, AutoShoot=false, InfJump=false, Fly=false, FpsBoost=false, NoRecoil=false, AntiHack=false, FOV=80, Vel=50, JumpPower=100}
-local gui, pan, top, scr, bol, ch, hu, rt, bv
-local lpA, lpU, lpHack
+local gui, pan, top, scr, bol, ch, hu, rt, bv, spin
+local lpA, lpU
 local espTags = {}
 local toggles = {}
 local originalHeadSize = Vector3.new(2, 1, 1)
@@ -24,6 +24,7 @@ local function DisableAll()
     uC()
     if hu then hu.WalkSpeed = 16; hu.JumpPower = 50; hu.UseJumpPower = false end
     if bv then bv:Destroy() bv = nil end
+    if spin then spin:Destroy() spin = nil end
     L.Ambient = Color3.fromRGB(70,70,70); L.OutdoorAmbient = Color3.fromRGB(128,128,128); L.GlobalShadows = true
     
     for p, t in pairs(espTags) do
@@ -35,9 +36,7 @@ local function DisableAll()
     for _, p in ipairs(game.Players:GetPlayers()) do
         if p ~= P and p.Character then
             local head = p.Character:FindFirstChild("Head")
-            local hrp = p.Character:FindFirstChild("HumanoidRootPart")
             if head then head.Size = originalHeadSize; head.Transparency = 0; head.CanCollide = true end
-            if hrp then hrp.Size = Vector3.new(2, 2, 1); hrp.Transparency = 1; hrp.CanCollide = true end
         end
     end
     
@@ -95,59 +94,6 @@ lpA = R.RenderStepped:Connect(function()
     end
 end)
 
--- LÓGICA ANTI-HACK
-if lpHack then lpHack:Disconnect() end
-lpHack = R.Heartbeat:Connect(function(dt)
-    uC()
-    if not ch then return end
-    
-    if c.AntiHack then
-        -- Anti-Aim (Gira a cabeça do jogador para os Aimbots errarem)
-        local head = ch:FindFirstChild("Head")
-        if head then
-            local spin = (tick() * 20) % 360
-            head.CFrame = head.CFrame * CFrame.Angles(0, math.rad(spin), 0)
-        end
-        -- Diminui a Hitbox do jogador
-        local hrp = ch:FindFirstChild("HumanoidRootPart")
-        if head then head.Size = Vector3.new(1.2, 0.8, 0.8) end
-        if hrp then hrp.Size = Vector3.new(1, 1, 1) end
-    else
-        if ch then
-            local head = ch:FindFirstChild("Head")
-            if head and head.Size ~= originalHeadSize then head.Size = originalHeadSize end
-        end
-    end
-end)
-
-local function Reaplicar()
-    if c.Hitbox then
-        for _, p in ipairs(game.Players:GetPlayers()) do
-            if p ~= P and p.Character then
-                local head = p.Character:FindFirstChild("Head")
-                local hrp = p.Character:FindFirstChild("HumanoidRootPart")
-                if head then head.Size = Vector3.new(20, 20, 20); head.Transparency = 0.8; head.CanCollide = false end
-                if hrp then hrp.Size = Vector3.new(20, 20, 20); hrp.Transparency = 1; hrp.CanCollide = false end
-            end
-        end
-    end
-end
-
-P.CharacterAdded:Connect(function(newChar)
-    task.wait(1)
-    ch = newChar
-    hu = ch:FindFirstChildOfClass("Humanoid")
-    rt = ch:FindFirstChild("HumanoidRootPart")
-    if hu then
-        hu.StateChanged:Connect(function(old, new)
-            if c.InfJump and new == Enum.HumanoidStateType.Landed then hu:ChangeState(Enum.HumanoidStateType.Jumping) end
-        end)
-        if c.Spd then hu.WalkSpeed = c.Vel end
-    end
-    task.wait(0.5)
-    Reaplicar()
-end)
-
 if lpU then lpU:Disconnect() end
 lpU = R.Heartbeat:Connect(function()
     uC()
@@ -173,6 +119,21 @@ lpU = R.Heartbeat:Connect(function()
     else
         if bv then bv:Destroy() bv=nil end
         if hu.PlatformStand then hu.PlatformStand = false end
+    end
+
+    -- Lógica Anti-Hack Corrigida (Gira sem cair no chão)
+    if c.AntiHack then
+        if not spin or not spin.Parent then
+            spin = Instance.new("BodyAngularVelocity", rt)
+            spin.AngularVelocity = Vector3.new(0, 30, 0)
+            spin.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+        end
+        local head = ch:FindFirstChild("Head")
+        if head then head.Size = Vector3.new(1, 1, 1) end -- Diminui a hitbox
+    else
+        if spin then spin:Destroy() spin = nil end
+        local head = ch:FindFirstChild("Head")
+        if head and head.Size ~= originalHeadSize then head.Size = originalHeadSize end
     end
     
     for _, p in ipairs(game.Players:GetPlayers()) do
@@ -203,19 +164,14 @@ lpU = R.Heartbeat:Connect(function()
                     espTags[p] = nil
                 end
                 
+                -- Hitbox Segura (Só a cabeça)
                 local head = pCh:FindFirstChild("Head")
-                local hrp = pCh:FindFirstChild("HumanoidRootPart")
-                if head and hrp then
+                if head then
                     if c.Hitbox then
-                        if head.Size ~= Vector3.new(20, 20, 20) then
-                            head.Size = Vector3.new(20, 20, 20)
-                            head.Transparency = 0.8
+                        if head.Size ~= Vector3.new(15, 15, 15) then
+                            head.Size = Vector3.new(15, 15, 15)
+                            head.Transparency = 0.5
                             head.CanCollide = false
-                        end
-                        if hrp.Size ~= Vector3.new(20, 20, 20) then
-                            hrp.Size = Vector3.new(20, 20, 20)
-                            hrp.Transparency = 1
-                            hrp.CanCollide = false
                         end
                     else
                         if head.Size ~= originalHeadSize then
@@ -223,21 +179,28 @@ lpU = R.Heartbeat:Connect(function()
                             head.Transparency = 0
                             head.CanCollide = true
                         end
-                        if hrp.Size ~= Vector3.new(2, 2, 1) then
-                            hrp.Size = Vector3.new(2, 2, 1)
-                            hrp.Transparency = 1
-                            hrp.CanCollide = true
-                        end
                     end
                 end
             end
         end
     end
 end)
+
+P.CharacterAdded:Connect(function(newChar)
+    task.wait(1)
+    ch = newChar
+    hu = ch:FindFirstChildOfClass("Humanoid")
+    rt = ch:FindFirstChild("HumanoidRootPart")
+    if hu then
+        hu.StateChanged:Connect(function(old, new)
+            if c.InfJump and new == Enum.HumanoidStateType.Landed then hu:ChangeState(Enum.HumanoidStateType.Jumping) end
+        end)
+        if c.Spd then hu.WalkSpeed = c.Vel end
+    end
+end)
 -- INTERFACE MACABRA + CARREGAMENTO
 local TweenService = game:GetService("TweenService")
 
--- TELA DE CARREGAMENTO
 local loadGui = Instance.new("ScreenGui", P.PlayerGui)
 loadGui.Name = "LoadingMichael"; loadGui.ResetOnSpawn = false
 local loadBg = Instance.new("Frame", loadGui); loadBg.Size = UDim2.new(1, 0, 1, 0); loadBg.BackgroundColor3 = Color3.fromRGB(5, 0, 0); loadBg.BorderSizePixel = 0; loadBg.ZIndex = 999
@@ -245,26 +208,16 @@ local loadBg = Instance.new("Frame", loadGui); loadBg.Size = UDim2.new(1, 0, 1, 
 local loadText = Instance.new("TextLabel", loadBg); loadText.Size = UDim2.new(1, 0, 0, 50); loadText.Position = UDim2.new(0, 0, 0.4, 0); loadText.BackgroundTransparency = 1; loadText.Text = "!MICHAELXITADOO!"; loadText.TextColor3 = Color3.fromRGB(255, 0, 0); loadText.Font = Enum.Font.GothamBlack; loadText.TextSize = 35; loadText.ZIndex = 1000
 
 local barBg = Instance.new("Frame", loadBg); barBg.Size = UDim2.new(0, 300, 0, 20); barBg.Position = UDim2.new(0.5, -150, 0.5, 30); barBg.BackgroundColor3 = Color3.fromRGB(30, 0, 0); barBg.BorderSizePixel = 0; barBg.ZIndex = 1000; Instance.new("UICorner", barBg).CornerRadius = UDim.new(0, 4)
-
 local barFill = Instance.new("Frame", barBg); barFill.Size = UDim2.new(0, 0, 1, 0); barFill.BackgroundColor3 = Color3.fromRGB(200, 0, 0); barFill.BorderSizePixel = 0; barFill.ZIndex = 1001; Instance.new("UICorner", barFill).CornerRadius = UDim.new(0, 4)
 
 TweenService:Create(barFill, TweenInfo.new(4, Enum.EasingStyle.Linear), {Size = UDim2.new(1, 0, 1, 0)}):Play()
 
-task.delay(1.5, function() 
-    loadText.Text = "CARREGANDO O INFERNO..." 
-    loadText.TextColor3 = Color3.fromRGB(200, 0, 0)
-end)
-
-task.delay(3.5, function() 
-    loadText.Text = "HACK-ATIVADO 🩸" 
-    loadText.TextColor3 = Color3.fromRGB(255, 0, 0)
-    loadText.TextSize = 40
-end)
+task.delay(1.5, function() loadText.Text = "CARREGANDO O INFERNO..." loadText.TextColor3 = Color3.fromRGB(200, 0, 0) end)
+task.delay(3.5, function() loadText.Text = "HACK-ATIVADO 🩸" loadText.TextColor3 = Color3.fromRGB(255, 0, 0) loadText.TextSize = 40 end)
 
 task.wait(4)
 loadGui:Destroy()
 
--- INTERFACE PRINCIPAL
 gui = Instance.new("ScreenGui", P.PlayerGui); gui.Name="MichaelXitado"; gui.ResetOnSpawn=false
 
 local function Notify(txt, isOn)
@@ -273,7 +226,6 @@ local function Notify(txt, isOn)
     Instance.new("UICorner", notif).CornerRadius = UDim.new(0, 8)
     
     local stroke = Instance.new("UIStroke", notif); stroke.Color = isOn and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 100, 100); stroke.Thickness = 2
-    
     local label = Instance.new("TextLabel", notif); label.Size = UDim2.new(1, 0, 1, 0); label.BackgroundTransparency = 1; label.Text = txt; label.TextColor3 = isOn and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(150, 150, 150); label.Font = Enum.Font.GothamBlack; label.TextSize = 14; label.ZIndex = 101
     
     TweenService:Create(notif, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -125, 0, 50)}):Play()
@@ -336,4 +288,4 @@ top.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch 
 top.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end end)
 U.InputChanged:Connect(function(i) if drag and (i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseMovement) then local d=i.Position-sP; pan.Position=UDim2.new(sPos.X.Scale,sPos.X.Offset+d.X,sPos.Y.Scale,sPos.Y.Offset+d.Y) end end)
 
-print("MICHAELXITADOO v15 CARREGADO COM SUCESSO!")
+print("MICHAELXITADOO v16 CARREGADO COM SUCESSO!")
