@@ -1,4 +1,4 @@
--- PAINEL MACABRO MICHAELXITADOO (LÓGICA FINAL v34 - HEADSHOT E TEAM CHECK)
+-- MICHAELXITADOO - HITBOX UNIVERSAL (v35)
 if getgenv().MontagneriXIT_Cleanup then pcall(getgenv().MontagneriXIT_Cleanup) end
 
 local P = game.Players.LocalPlayer
@@ -13,14 +13,14 @@ local gui, pan, top, scr, bol, ch, hu, rt, bv, bav
 local lpA, lpU
 local espTags = {}
 local toggles = {}
+local hitboxParts = {}
 
 local FF = {Bg=Color3.fromRGB(10, 0, 0), Top=Color3.fromRGB(30, 0, 0), Neon=Color3.fromRGB(255,0,0), Text=Color3.fromRGB(255,255,255), Btn=Color3.fromRGB(20, 5, 5), On=Color3.fromRGB(150,0,0), Off=Color3.fromRGB(20,5,5)}
 
 local function uC() ch=P.Character; hu=ch and ch:FindFirstChildOfClass("Humanoid"); rt=ch and ch:FindFirstChild("HumanoidRootPart") end
 
--- FUNÇÃO PARA VERIFICAR SE É INIMIGO (TEAM CHECK)
 local function isEnemy(targetPlayer)
-    if not targetPlayer.Team or not P.Team then return true end -- Se não tiver time, é inimigo
+    if not targetPlayer.Team or not P.Team then return true end
     return targetPlayer.Team ~= P.Team
 end
 
@@ -38,16 +38,15 @@ local function DisableAll()
         espTags[p] = nil
     end
     
-    -- Limpa as Bolhas de Hitbox
     for _, p in ipairs(game.Players:GetPlayers()) do
         if p.Character then
-            local head = p.Character:FindFirstChild("Head")
-            if head then
-                local hb = head:FindFirstChild("HitboxBolha")
-                if hb then hb:Destroy() end
-            end
+            local hrp = p.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then hrp.Size = Vector3.new(2, 2, 1); hrp.CanCollide = true end
+            local hb = p.Character:FindFirstChild("UniversalHeadHitbox")
+            if hb then hb:Destroy() end
         end
     end
+    hitboxParts = {}
 
     for key, btn in pairs(toggles) do
         c[key] = false
@@ -57,6 +56,53 @@ local function DisableAll()
     end
 end
 getgenv().MontagneriXIT_Cleanup = DisableAll
+
+local function applyHitbox(player)
+    local char = player.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    local head = char:FindFirstChild("Head")
+    if not hrp or not head then return end
+    
+    if c.Hitbox then
+        -- HRP gigante (universal, não congela)
+        if hrp.Size ~= Vector3.new(25, 25, 25) then
+            hrp.Size = Vector3.new(25, 25, 25)
+            hrp.CanQuery = true
+            hrp.CanCollide = false
+            hrp.Transparency = 1
+        end
+        
+        -- Hitbox separada na cabeça (headshot)
+        local existing = char:FindFirstChild("UniversalHeadHitbox")
+        if not existing then
+            local hb = Instance.new("Part")
+            hb.Name = "UniversalHeadHitbox"
+            hb.Size = Vector3.new(25, 25, 25)
+            hb.Transparency = 1
+            hb.CanCollide = false
+            hb.CanTouch = false
+            hb.CanQuery = true
+            hb.Massless = true
+            hb.Anchored = false
+            hb.Parent = char
+            
+            local weld = Instance.new("WeldConstraint")
+            weld.Part0 = hb
+            weld.Part1 = head
+            weld.Parent = hb
+            hitboxParts[player] = hb
+        end
+    else
+        if hrp.Size ~= Vector3.new(2, 2, 1) then
+            hrp.Size = Vector3.new(2, 2, 1)
+            hrp.CanCollide = true
+        end
+        local hb = char:FindFirstChild("UniversalHeadHitbox")
+        if hb then hb:Destroy() end
+        hitboxParts[player] = nil
+    end
+end
 
 local function isVisible(target)
     local origin = Cam.CFrame.Position
@@ -88,11 +134,8 @@ if lpA then lpA:Disconnect() end
 lpA = R.RenderStepped:Connect(function()
     if c.Aimbot then
         local target = getClosest()
-        if target then
-            Cam.CFrame = CFrame.new(Cam.CFrame.Position, target.Position)
-        end
+        if target then Cam.CFrame = CFrame.new(Cam.CFrame.Position, target.Position) end
     end
-    
     if c.AutoShoot and ch then
         local target = getClosest()
         if target then
@@ -110,11 +153,7 @@ lpU = R.Heartbeat:Connect(function()
     if c.Spd then hu.WalkSpeed = c.Vel end
     if c.Jmp then hu.JumpPower = c.JumpPower; hu.UseJumpPower = true end
     if c.Full then L.Ambient = Color3.fromRGB(255,255,255); L.OutdoorAmbient = Color3.fromRGB(255,255,255); L.GlobalShadows = false end
-    
-    if c.FpsBoost then
-        L.GlobalShadows = false; L.FogEnd = 100000
-        pcall(function() settings().Rendering.QualityLevel = Enum.QualityLevel.Level01 end)
-    end
+    if c.FpsBoost then L.GlobalShadows = false; L.FogEnd = 100000 end
     
     if c.Fly then
         hu.PlatformStand = true
@@ -148,7 +187,6 @@ lpU = R.Heartbeat:Connect(function()
             local pCh = p.Character
             local pHum = pCh:FindFirstChildOfClass("Humanoid")
             if pHum and pHum.Health > 0 then
-                
                 -- ESP
                 if c.ESP then
                     if not espTags[p] or espTags[p].char ~= pCh or not espTags[p].hl.Parent then
@@ -173,31 +211,8 @@ lpU = R.Heartbeat:Connect(function()
                     espTags[p] = nil
                 end
                 
-                -- HITBOX INVISÍVEL DE 30X APENAS NA CABEÇA
-                local head = pCh:FindFirstChild("Head")
-                if head then
-                    if c.Hitbox then
-                        if not head:FindFirstChild("HitboxBolha") then
-                            local bolha = Instance.new("Part")
-                            bolha.Name = "HitboxBolha"
-                            bolha.Size = Vector3.new(30, 30, 30)
-                            bolha.Transparency = 1
-                            bolha.CanCollide = false
-                            bolha.CanTouch = false
-                            bolha.CanQuery = true
-                            bolha.Massless = true
-                            bolha.Parent = head
-                            
-                            local weld = Instance.new("WeldConstraint")
-                            weld.Part0 = bolha
-                            weld.Part1 = head
-                            weld.Parent = bolha
-                        end
-                    else
-                        local hb = head:FindFirstChild("HitboxBolha")
-                        if hb then hb:Destroy() end
-                    end
-                end
+                -- AUTO-REAPPLY DA HITBOX
+                applyHitbox(p)
             end
         end
     end
@@ -241,10 +256,8 @@ local function Notify(txt, isOn)
     for _, child in pairs(gui:GetChildren()) do if child.Name == "Notification" then child:Destroy() end end
     local notif = Instance.new("Frame", gui); notif.Name = "Notification"; notif.Size = UDim2.new(0, 250, 0, 50); notif.Position = UDim2.new(0.5, -125, 0, -60); notif.BackgroundColor3 = Color3.fromRGB(10, 0, 0); notif.BorderSizePixel = 0; notif.ZIndex = 100
     Instance.new("UICorner", notif).CornerRadius = UDim.new(0, 8)
-    
     local stroke = Instance.new("UIStroke", notif); stroke.Color = isOn and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 100, 100); stroke.Thickness = 2
     local label = Instance.new("TextLabel", notif); label.Size = UDim2.new(1, 0, 1, 0); label.BackgroundTransparency = 1; label.Text = txt; label.TextColor3 = isOn and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(150, 150, 150); label.Font = Enum.Font.GothamBlack; label.TextSize = 14; label.ZIndex = 101
-    
     TweenService:Create(notif, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -125, 0, 50)}):Play()
     task.delay(3.5, function() if notif and notif.Parent then local tweenOut = TweenService:Create(notif, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -125, 0, -60)}); tweenOut:Play(); tweenOut.Completed:Connect(function() notif:Destroy() end) end end)
 end
@@ -273,14 +286,13 @@ local function makeBtn(txt, y, key, cb)
         TweenService:Create(b, TweenInfo.new(0.2), {BackgroundColor3 = on and Color3.fromRGB(150,0,0) or Color3.fromRGB(20,5,5)}):Play()
         TweenService:Create(b, TweenInfo.new(0.2), {TextColor3 = on and Color3.fromRGB(255,255,255) or Color3.fromRGB(150,150,150)}):Play()
         TweenService:Create(stroke, TweenInfo.new(0.2), {Color = on and Color3.fromRGB(255,0,0) or Color3.fromRGB(60,0,0)}):Play()
-        
         if on then Notify("XIT-INSERIDO 💀", true) else Notify("XIT-REMOVIDO 🩸", false) end
         if cb then cb(on) end
     end)
 end
 
 makeBtn("AIMBOT (TRAVA MIRA)", 10, "Aimbot")
-makeBtn("HITBOX CABECA 30X (INV)", 55, "Hitbox")
+makeBtn("HITBOX UNIVERSAL 25X", 55, "Hitbox")
 makeBtn("AUTO SHOOT (ATIRAR AUTO)", 100, "AutoShoot")
 makeBtn("ESP (VER INIMIGOS)", 145, "ESP")
 makeBtn("SPEED", 190, "Spd")
@@ -305,4 +317,4 @@ top.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch 
 top.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end end)
 U.InputChanged:Connect(function(i) if drag and (i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseMovement) then local d=i.Position-sP; pan.Position=UDim2.new(sPos.X.Scale,sPos.X.Offset+d.X,sPos.Y.Scale,sPos.Y.Offset+d.Y) end end)
 
-print("MICHAELXITADOO v34 CARREGADO COM SUCESSO!")
+print("MICHAELXITADOO v35 UNIVERSAL CARREGADO!")
