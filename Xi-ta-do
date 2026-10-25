@@ -1,4 +1,4 @@
--- PAINEL MACABRO MICHAELXITADOO (LÓGICA FINAL v33 - HEADSHOT INVISÍVEL)
+-- PAINEL MACABRO MICHAELXITADOO (LÓGICA FINAL v34 - HEADSHOT E TEAM CHECK)
 if getgenv().MontagneriXIT_Cleanup then pcall(getgenv().MontagneriXIT_Cleanup) end
 
 local P = game.Players.LocalPlayer
@@ -18,6 +18,12 @@ local FF = {Bg=Color3.fromRGB(10, 0, 0), Top=Color3.fromRGB(30, 0, 0), Neon=Colo
 
 local function uC() ch=P.Character; hu=ch and ch:FindFirstChildOfClass("Humanoid"); rt=ch and ch:FindFirstChild("HumanoidRootPart") end
 
+-- FUNÇÃO PARA VERIFICAR SE É INIMIGO (TEAM CHECK)
+local function isEnemy(targetPlayer)
+    if not targetPlayer.Team or not P.Team then return true end -- Se não tiver time, é inimigo
+    return targetPlayer.Team ~= P.Team
+end
+
 local function DisableAll()
     for k, _ in pairs(c) do if type(c[k]) == "boolean" then c[k] = false end end
     uC()
@@ -32,14 +38,13 @@ local function DisableAll()
         espTags[p] = nil
     end
     
-    -- Restaura a Cabeça
+    -- Limpa as Bolhas de Hitbox
     for _, p in ipairs(game.Players:GetPlayers()) do
         if p.Character then
             local head = p.Character:FindFirstChild("Head")
-            if head then 
-                head.Size = Vector3.new(2, 1, 1)
-                head.Transparency = 0
-                head.CanCollide = true
+            if head then
+                local hb = head:FindFirstChild("HitboxBolha")
+                if hb then hb:Destroy() end
             end
         end
     end
@@ -67,7 +72,7 @@ local function getClosest()
     local closest, dist = nil, math.huge
     local center = Vector2.new(Cam.ViewportSize.X/2, Cam.ViewportSize.Y/2)
     for _, p in ipairs(game.Players:GetPlayers()) do
-        if p ~= P and p.Character and p.Character:FindFirstChild("Head") and p.Character:FindFirstChildOfClass("Humanoid") and p.Character.Humanoid.Health > 0 then
+        if p ~= P and isEnemy(p) and p.Character and p.Character:FindFirstChild("Head") and p.Character:FindFirstChildOfClass("Humanoid") and p.Character.Humanoid.Health > 0 then
             local head = p.Character.Head
             local screenPos, onScreen = Cam:WorldToViewportPoint(head.Position)
             if onScreen and isVisible(head) then
@@ -139,7 +144,7 @@ lpU = R.Heartbeat:Connect(function()
     end
     
     for _, p in ipairs(game.Players:GetPlayers()) do
-        if p ~= P and p.Character then
+        if p ~= P and isEnemy(p) and p.Character then
             local pCh = p.Character
             local pHum = pCh:FindFirstChildOfClass("Humanoid")
             if pHum and pHum.Health > 0 then
@@ -168,21 +173,29 @@ lpU = R.Heartbeat:Connect(function()
                     espTags[p] = nil
                 end
                 
-                -- HITBOX INVISÍVEL NA CABEÇA 30X (NÃO CONGELA E DÁ HEADSHOT)
+                -- HITBOX INVISÍVEL DE 30X APENAS NA CABEÇA
                 local head = pCh:FindFirstChild("Head")
                 if head then
                     if c.Hitbox then
-                        if head.Size ~= Vector3.new(30, 30, 30) then
-                            head.Size = Vector3.new(30, 30, 30)
-                            head.Transparency = 1 -- Invisível para não ver o travamento
-                            head.CanCollide = false
+                        if not head:FindFirstChild("HitboxBolha") then
+                            local bolha = Instance.new("Part")
+                            bolha.Name = "HitboxBolha"
+                            bolha.Size = Vector3.new(30, 30, 30)
+                            bolha.Transparency = 1
+                            bolha.CanCollide = false
+                            bolha.CanTouch = false
+                            bolha.CanQuery = true
+                            bolha.Massless = true
+                            bolha.Parent = head
+                            
+                            local weld = Instance.new("WeldConstraint")
+                            weld.Part0 = bolha
+                            weld.Part1 = head
+                            weld.Parent = bolha
                         end
                     else
-                        if head.Size ~= Vector3.new(2, 1, 1) then
-                            head.Size = Vector3.new(2, 1, 1)
-                            head.Transparency = 0
-                            head.CanCollide = true
-                        end
+                        local hb = head:FindFirstChild("HitboxBolha")
+                        if hb then hb:Destroy() end
                     end
                 end
             end
@@ -292,4 +305,4 @@ top.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch 
 top.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end end)
 U.InputChanged:Connect(function(i) if drag and (i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseMovement) then local d=i.Position-sP; pan.Position=UDim2.new(sPos.X.Scale,sPos.X.Offset+d.X,sPos.Y.Scale,sPos.Y.Offset+d.Y) end end)
 
-print("MICHAELXITADOO v33 CARREGADO COM SUCESSO!")
+print("MICHAELXITADOO v34 CARREGADO COM SUCESSO!")
