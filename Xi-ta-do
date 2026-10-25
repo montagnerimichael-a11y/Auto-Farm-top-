@@ -1,4 +1,4 @@
--- PAINEL MACABRO MICHAELXITADOO (LÓGICA FINAL v32 - HITBOX DIRETA 30X)
+-- PAINEL MACABRO MICHAELXITADOO (LÓGICA FINAL v33 - HEADSHOT INVISÍVEL)
 if getgenv().MontagneriXIT_Cleanup then pcall(getgenv().MontagneriXIT_Cleanup) end
 
 local P = game.Players.LocalPlayer
@@ -32,13 +32,15 @@ local function DisableAll()
         espTags[p] = nil
     end
     
-    -- Restaura Cabeça e Tronco
+    -- Restaura a Cabeça
     for _, p in ipairs(game.Players:GetPlayers()) do
         if p.Character then
             local head = p.Character:FindFirstChild("Head")
-            local torso = p.Character:FindFirstChild("UpperTorso") or p.Character:FindFirstChild("Torso")
-            if head then head.Size = Vector3.new(2, 1, 1); head.Transparency = 0; head.CanCollide = true end
-            if torso then torso.Size = Vector3.new(2, 2, 1); torso.Transparency = 0; torso.CanCollide = true end
+            if head then 
+                head.Size = Vector3.new(2, 1, 1)
+                head.Transparency = 0
+                head.CanCollide = true
+            end
         end
     end
 
@@ -166,32 +168,20 @@ lpU = R.Heartbeat:Connect(function()
                     espTags[p] = nil
                 end
                 
-                -- HITBOX 30X (CABEÇA E TRONCO)
+                -- HITBOX INVISÍVEL NA CABEÇA 30X (NÃO CONGELA E DÁ HEADSHOT)
                 local head = pCh:FindFirstChild("Head")
-                local torso = pCh:FindFirstChild("UpperTorso") or pCh:FindFirstChild("Torso")
-                
-                if head and torso then
+                if head then
                     if c.Hitbox then
                         if head.Size ~= Vector3.new(30, 30, 30) then
                             head.Size = Vector3.new(30, 30, 30)
-                            head.Transparency = 0.5
+                            head.Transparency = 1 -- Invisível para não ver o travamento
                             head.CanCollide = false
-                        end
-                        if torso.Size ~= Vector3.new(30, 30, 30) then
-                            torso.Size = Vector3.new(30, 30, 30)
-                            torso.Transparency = 0.5
-                            torso.CanCollide = false
                         end
                     else
                         if head.Size ~= Vector3.new(2, 1, 1) then
                             head.Size = Vector3.new(2, 1, 1)
                             head.Transparency = 0
                             head.CanCollide = true
-                        end
-                        if torso.Size ~= Vector3.new(2, 2, 1) then
-                            torso.Size = Vector3.new(2, 2, 1)
-                            torso.Transparency = 0
-                            torso.CanCollide = true
                         end
                     end
                 end
@@ -277,7 +267,7 @@ local function makeBtn(txt, y, key, cb)
 end
 
 makeBtn("AIMBOT (TRAVA MIRA)", 10, "Aimbot")
-makeBtn("HITBOX 30X (CABECA+TRONCO)", 55, "Hitbox")
+makeBtn("HITBOX CABECA 30X (INV)", 55, "Hitbox")
 makeBtn("AUTO SHOOT (ATIRAR AUTO)", 100, "AutoShoot")
 makeBtn("ESP (VER INIMIGOS)", 145, "ESP")
 makeBtn("SPEED", 190, "Spd")
@@ -302,4 +292,4 @@ top.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch 
 top.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end end)
 U.InputChanged:Connect(function(i) if drag and (i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseMovement) then local d=i.Position-sP; pan.Position=UDim2.new(sPos.X.Scale,sPos.X.Offset+d.X,sPos.Y.Scale,sPos.Y.Offset+d.Y) end end)
 
-print("MICHAELXITADOO v32 CARREGADO COM SUCESSO!")
+print("MICHAELXITADOO v33 CARREGADO COM SUCESSO!")
