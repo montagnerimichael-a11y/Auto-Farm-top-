@@ -1,4 +1,4 @@
--- MICHAELXITADOO - HITBOX UNIVERSAL (v35)
+-- MICHAELXITADOO ULTIMATE (v37 - PAINEL COMPACTO)
 if getgenv().MontagneriXIT_Cleanup then pcall(getgenv().MontagneriXIT_Cleanup) end
 
 local P = game.Players.LocalPlayer
@@ -7,13 +7,14 @@ local R = game:GetService("RunService")
 local W = game:GetService("Workspace")
 local L = game:GetService("Lighting")
 local Cam = W.CurrentCamera
+local Mouse = P:GetMouse()
 
-local c = {Aimbot=false, Hitbox=false, ESP=false, Spd=false, Jmp=false, Full=false, AutoShoot=false, InfJump=false, Fly=false, FpsBoost=false, NoRecoil=false, AntiHack=false, FOV=150, Vel=50, JumpPower=100}
+local c = {Aimbot=false, SilentAim=false, TriggerBot=false, ESP=false, Spd=false, Jmp=false, Full=false, AutoReload=false, InfJump=false, Fly=false, FpsBoost=false, NoFog=false, AntiFlash=false, AntiHack=false, FOV=120, Vel=50, JumpPower=100}
 local gui, pan, top, scr, bol, ch, hu, rt, bv, bav
 local lpA, lpU
 local espTags = {}
 local toggles = {}
-local hitboxParts = {}
+local aimSilentTarget = nil
 
 local FF = {Bg=Color3.fromRGB(10, 0, 0), Top=Color3.fromRGB(30, 0, 0), Neon=Color3.fromRGB(255,0,0), Text=Color3.fromRGB(255,255,255), Btn=Color3.fromRGB(20, 5, 5), On=Color3.fromRGB(150,0,0), Off=Color3.fromRGB(20,5,5)}
 
@@ -31,22 +32,13 @@ local function DisableAll()
     if bv then bv:Destroy() bv = nil end
     if bav then bav:Destroy() bav = nil end
     L.Ambient = Color3.fromRGB(70,70,70); L.OutdoorAmbient = Color3.fromRGB(128,128,128); L.GlobalShadows = true
+    L.FogEnd = 100000
     
     for p, t in pairs(espTags) do
         if t.hl then t.hl:Destroy() end
         if t.bb then t.bb:Destroy() end
         espTags[p] = nil
     end
-    
-    for _, p in ipairs(game.Players:GetPlayers()) do
-        if p.Character then
-            local hrp = p.Character:FindFirstChild("HumanoidRootPart")
-            if hrp then hrp.Size = Vector3.new(2, 2, 1); hrp.CanCollide = true end
-            local hb = p.Character:FindFirstChild("UniversalHeadHitbox")
-            if hb then hb:Destroy() end
-        end
-    end
-    hitboxParts = {}
 
     for key, btn in pairs(toggles) do
         c[key] = false
@@ -56,53 +48,6 @@ local function DisableAll()
     end
 end
 getgenv().MontagneriXIT_Cleanup = DisableAll
-
-local function applyHitbox(player)
-    local char = player.Character
-    if not char then return end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    local head = char:FindFirstChild("Head")
-    if not hrp or not head then return end
-    
-    if c.Hitbox then
-        -- HRP gigante (universal, não congela)
-        if hrp.Size ~= Vector3.new(25, 25, 25) then
-            hrp.Size = Vector3.new(25, 25, 25)
-            hrp.CanQuery = true
-            hrp.CanCollide = false
-            hrp.Transparency = 1
-        end
-        
-        -- Hitbox separada na cabeça (headshot)
-        local existing = char:FindFirstChild("UniversalHeadHitbox")
-        if not existing then
-            local hb = Instance.new("Part")
-            hb.Name = "UniversalHeadHitbox"
-            hb.Size = Vector3.new(25, 25, 25)
-            hb.Transparency = 1
-            hb.CanCollide = false
-            hb.CanTouch = false
-            hb.CanQuery = true
-            hb.Massless = true
-            hb.Anchored = false
-            hb.Parent = char
-            
-            local weld = Instance.new("WeldConstraint")
-            weld.Part0 = hb
-            weld.Part1 = head
-            weld.Parent = hb
-            hitboxParts[player] = hb
-        end
-    else
-        if hrp.Size ~= Vector3.new(2, 2, 1) then
-            hrp.Size = Vector3.new(2, 2, 1)
-            hrp.CanCollide = true
-        end
-        local hb = char:FindFirstChild("UniversalHeadHitbox")
-        if hb then hb:Destroy() end
-        hitboxParts[player] = nil
-    end
-end
 
 local function isVisible(target)
     local origin = Cam.CFrame.Position
@@ -134,9 +79,18 @@ if lpA then lpA:Disconnect() end
 lpA = R.RenderStepped:Connect(function()
     if c.Aimbot then
         local target = getClosest()
-        if target then Cam.CFrame = CFrame.new(Cam.CFrame.Position, target.Position) end
+        if target then
+            Cam.CFrame = CFrame.new(Cam.CFrame.Position, target.Position)
+        end
     end
-    if c.AutoShoot and ch then
+    
+    if c.SilentAim then
+        aimSilentTarget = getClosest()
+    else
+        aimSilentTarget = nil
+    end
+    
+    if c.TriggerBot and ch then
         local target = getClosest()
         if target then
             local tool = ch:FindFirstChildOfClass("Tool")
@@ -153,7 +107,24 @@ lpU = R.Heartbeat:Connect(function()
     if c.Spd then hu.WalkSpeed = c.Vel end
     if c.Jmp then hu.JumpPower = c.JumpPower; hu.UseJumpPower = true end
     if c.Full then L.Ambient = Color3.fromRGB(255,255,255); L.OutdoorAmbient = Color3.fromRGB(255,255,255); L.GlobalShadows = false end
+    if c.NoFog then L.FogEnd = 100000; L.FogStart = 0 end
     if c.FpsBoost then L.GlobalShadows = false; L.FogEnd = 100000 end
+    
+    if c.AntiFlash then
+        for _, obj in ipairs(L:GetChildren()) do
+            if obj:IsA("PostEffect") then obj.Enabled = false end
+        end
+    end
+    
+    if c.AutoReload and ch then
+        local tool = ch:FindFirstChildOfClass("Tool")
+        if tool then
+            pcall(function()
+                local reload = tool:FindFirstChild("Reload")
+                if reload then reload:Fire() end
+            end)
+        end
+    end
     
     if c.Fly then
         hu.PlatformStand = true
@@ -187,7 +158,6 @@ lpU = R.Heartbeat:Connect(function()
             local pCh = p.Character
             local pHum = pCh:FindFirstChildOfClass("Humanoid")
             if pHum and pHum.Health > 0 then
-                -- ESP
                 if c.ESP then
                     if not espTags[p] or espTags[p].char ~= pCh or not espTags[p].hl.Parent then
                         if espTags[p] then
@@ -210,9 +180,6 @@ lpU = R.Heartbeat:Connect(function()
                     if espTags[p].bb then espTags[p].bb:Destroy() end
                     espTags[p] = nil
                 end
-                
-                -- AUTO-REAPPLY DA HITBOX
-                applyHitbox(p)
             end
         end
     end
@@ -230,7 +197,7 @@ P.CharacterAdded:Connect(function(newChar)
         if c.Spd then hu.WalkSpeed = c.Vel end
     end
 end)
--- INTERFACE MACABRA + CARREGAMENTO
+-- INTERFACE MACABRA (PAINEL MENOR E ROLÁVEL)
 local TweenService = game:GetService("TweenService")
 
 local loadGui = Instance.new("ScreenGui", P.PlayerGui)
@@ -262,22 +229,23 @@ local function Notify(txt, isOn)
     task.delay(3.5, function() if notif and notif.Parent then local tweenOut = TweenService:Create(notif, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -125, 0, -60)}); tweenOut:Play(); tweenOut.Completed:Connect(function() notif:Destroy() end) end end)
 end
 
-pan=Instance.new("Frame", gui); pan.Size=UDim2.new(0,280,0,420); pan.Position=UDim2.new(1,-290,0,20); pan.BackgroundColor3=Color3.fromRGB(10, 0, 0); pan.BorderSizePixel=0; pan.ClipsDescendants = true
+-- PAINEL REDUZIDO (240x360)
+pan=Instance.new("Frame", gui); pan.Size=UDim2.new(0,240,0,360); pan.Position=UDim2.new(1,-250,0,20); pan.BackgroundColor3=Color3.fromRGB(10, 0, 0); pan.BorderSizePixel=0; pan.ClipsDescendants = true
 Instance.new("UICorner",pan).CornerRadius=UDim.new(0,10)
 local bgM = Instance.new("TextLabel", pan); bgM.Size = UDim2.new(1, 0, 1, 0); bgM.BackgroundTransparency = 1; bgM.Text = "M"; bgM.TextColor3 = Color3.fromRGB(40, 0, 0); bgM.TextTransparency = 0.3; bgM.TextScaled = true; bgM.Font = Enum.Font.GothamBlack; bgM.ZIndex = 1; bgM.Position = UDim2.new(0, 0, 0.1, 0)
 
-top=Instance.new("Frame", pan); top.Size=UDim2.new(1,0,0,50); top.BackgroundColor3=Color3.fromRGB(30,0,0); top.BorderSizePixel=0; top.ZIndex = 2; Instance.new("UICorner",top).CornerRadius=UDim.new(0,10)
-local ti=Instance.new("TextLabel", top); ti.Size=UDim2.new(1,-100,1,0); ti.Position=UDim2.new(0,12,0,0); ti.BackgroundTransparency=1; ti.Text="💀 MICHAELXITADOO 🩸"; ti.TextXAlignment=Enum.TextXAlignment.Left; ti.Font=Enum.Font.GothamBlack; ti.TextSize=16; ti.TextColor3=Color3.fromRGB(255,0,0); ti.ZIndex = 3
-local close = Instance.new("TextButton", top); close.Size=UDim2.new(0,25,0,25); close.Position=UDim2.new(1,-32,0.5,-12); close.Text="X"; close.BackgroundColor3=Color3.fromRGB(150,0,0); close.TextColor3=Color3.fromRGB(255,255,255); close.Font=Enum.Font.GothamBold; close.ZIndex = 3; Instance.new("UICorner",close).CornerRadius=UDim.new(0,5)
+top=Instance.new("Frame", pan); top.Size=UDim2.new(1,0,0,40); top.BackgroundColor3=Color3.fromRGB(30,0,0); top.BorderSizePixel=0; top.ZIndex = 2; Instance.new("UICorner",top).CornerRadius=UDim.new(0,10)
+local ti=Instance.new("TextLabel", top); ti.Size=UDim2.new(1,-80,1,0); ti.Position=UDim2.new(0,10,0,0); ti.BackgroundTransparency=1; ti.Text="💀 MICHAELXITADOO"; ti.TextXAlignment=Enum.TextXAlignment.Left; ti.Font=Enum.Font.GothamBlack; ti.TextSize=14; ti.TextColor3=Color3.fromRGB(255,0,0); ti.ZIndex = 3
+local close = Instance.new("TextButton", top); close.Size=UDim2.new(0,22,0,22); close.Position=UDim2.new(1,-28,0.5,-11); close.Text="X"; close.BackgroundColor3=Color3.fromRGB(150,0,0); close.TextColor3=Color3.fromRGB(255,255,255); close.Font=Enum.Font.GothamBold; close.TextSize=12; close.ZIndex = 3; Instance.new("UICorner",close).CornerRadius=UDim.new(0,4)
 close.MouseButton1Click:Connect(function() DisableAll() gui:Destroy() end)
-local minBtn = Instance.new("TextButton", top); minBtn.Size=UDim2.new(0,25,0,25); minBtn.Position=UDim2.new(1,-62,0.5,-12); minBtn.Text="-"; minBtn.BackgroundColor3=Color3.fromRGB(20,0,0); minBtn.TextColor3=Color3.fromRGB(255,0,0); minBtn.Font=Enum.Font.GothamBold; minBtn.ZIndex = 3; Instance.new("UICorner",minBtn).CornerRadius=UDim.new(0,5)
+local minBtn = Instance.new("TextButton", top); minBtn.Size=UDim2.new(0,22,0,22); minBtn.Position=UDim2.new(1,-54,0.5,-11); minBtn.Text="-"; minBtn.BackgroundColor3=Color3.fromRGB(20,0,0); minBtn.TextColor3=Color3.fromRGB(255,0,0); minBtn.Font=Enum.Font.GothamBold; minBtn.TextSize=14; minBtn.ZIndex = 3; Instance.new("UICorner",minBtn).CornerRadius=UDim.new(0,4)
 minBtn.MouseButton1Click:Connect(function() pan.Visible=false; bol.Visible=true end)
 
-scr=Instance.new("ScrollingFrame", pan); scr.Size=UDim2.new(1,-12,1,-70); scr.Position=UDim2.new(0,6,0,60); scr.BackgroundTransparency=1; scr.BorderSizePixel=0; scr.ScrollBarThickness=3; scr.ScrollBarImageColor3=Color3.fromRGB(255,0,0); scr.CanvasSize=UDim2.new(0,0,0,650); scr.ZIndex = 2
+scr=Instance.new("ScrollingFrame", pan); scr.Size=UDim2.new(1,-10,1,-55); scr.Position=UDim2.new(0,5,0,45); scr.BackgroundTransparency=1; scr.BorderSizePixel=0; scr.ScrollBarThickness=3; scr.ScrollBarImageColor3=Color3.fromRGB(255,0,0); scr.CanvasSize=UDim2.new(0,0,0,560); scr.ZIndex = 2
 
 local function makeBtn(txt, y, key, cb)
-    local b = Instance.new("TextButton", scr); b.Size=UDim2.new(0.9,0,0,35); b.Position=UDim2.new(0.05,0,0,y); b.Text=txt; b.BackgroundColor3=Color3.fromRGB(20, 5, 5); b.TextColor3=Color3.fromRGB(150,150,150); b.Font=Enum.Font.GothamBlack; b.TextSize=13; b.TextXAlignment=Enum.TextXAlignment.Left; b.ZIndex = 3
-    local pad = Instance.new("UIPadding", b); pad.PaddingLeft = UDim.new(0,10); Instance.new("UICorner", b).CornerRadius = UDim.new(0,6)
+    local b = Instance.new("TextButton", scr); b.Size=UDim2.new(0.95,0,0,32); b.Position=UDim2.new(0.025,0,0,y); b.Text=txt; b.BackgroundColor3=Color3.fromRGB(20, 5, 5); b.TextColor3=Color3.fromRGB(150,150,150); b.Font=Enum.Font.GothamBold; b.TextSize=11; b.TextXAlignment=Enum.TextXAlignment.Left; b.ZIndex = 3
+    local pad = Instance.new("UIPadding", b); pad.PaddingLeft = UDim.new(0,6); Instance.new("UICorner", b).CornerRadius = UDim.new(0,5)
     local stroke = Instance.new("UIStroke", b); stroke.Color = Color3.fromRGB(60, 0, 0); stroke.Thickness = 1
     toggles[key] = b
     b.MouseButton1Click:Connect(function()
@@ -291,19 +259,21 @@ local function makeBtn(txt, y, key, cb)
     end)
 end
 
-makeBtn("AIMBOT (TRAVA MIRA)", 10, "Aimbot")
-makeBtn("HITBOX UNIVERSAL 25X", 55, "Hitbox")
-makeBtn("AUTO SHOOT (ATIRAR AUTO)", 100, "AutoShoot")
-makeBtn("ESP (VER INIMIGOS)", 145, "ESP")
-makeBtn("SPEED", 190, "Spd")
-makeBtn("INFINITE JUMP (PULO INF)", 235, "InfJump")
-makeBtn("FLY (VOAR)", 280, "Fly")
-makeBtn("FULLBRIGHT (CLARIDADE)", 325, "Full")
-makeBtn("FPS BOOST (TIRAR LAG)", 370, "FpsBoost")
-makeBtn("NO RECOIL (SEM RECUO)", 415, "NoRecoil")
-makeBtn("ANTI-HACK (FANTASMA)", 460, "AntiHack")
+makeBtn("🎯 AIMBOT (TRAVA MIRA)", 5, "Aimbot")
+makeBtn("👻 SILENT AIM (SEM MIRA)", 41, "SilentAim")
+makeBtn("🔫 TRIGGER BOT (ATIRA AUTO)", 77, "TriggerBot")
+makeBtn("👁️ ESP (VER INIMIGOS)", 113, "ESP")
+makeBtn("🔄 AUTO RELOAD (RECARREGA)", 149, "AutoReload")
+makeBtn("⚡ SPEED", 185, "Spd")
+makeBtn("🦘 INFINITE JUMP", 221, "InfJump")
+makeBtn("✈️ FLY (VOAR)", 257, "Fly")
+makeBtn("🌟 FULLBRIGHT", 293, "Full")
+makeBtn("🌫️ REMOVE FOG", 329, "NoFog")
+makeBtn("⚡ ANTI FLASH", 365, "AntiFlash")
+makeBtn("🚀 FPS BOOST", 401, "FpsBoost")
+makeBtn("🛡️ ANTI-HACK", 437, "AntiHack")
 
-bol = Instance.new("TextButton", gui); bol.Size=UDim2.new(0,65,0,65); bol.Position=UDim2.new(0.5, -32, 0, 20); bol.Text="💀"; bol.TextSize=35; bol.Font=Enum.Font.GothamBlack; bol.TextColor3=Color3.fromRGB(255,255,255); bol.Visible=false; bol.BackgroundColor3 = Color3.fromRGB(10, 0, 0)
+bol = Instance.new("TextButton", gui); bol.Size=UDim2.new(0,55,0,55); bol.Position=UDim2.new(0.5, -27, 0, 15); bol.Text="💀"; bol.TextSize=30; bol.Font=Enum.Font.GothamBlack; bol.TextColor3=Color3.fromRGB(255,255,255); bol.Visible=false; bol.BackgroundColor3 = Color3.fromRGB(10, 0, 0)
 Instance.new("UICorner",bol).CornerRadius=UDim.new(1,0)
 local bStroke = Instance.new("UIStroke", bol); bStroke.Color = Color3.fromRGB(255,0,0); bStroke.Thickness = 3
 task.spawn(function() while bol.Parent do task.wait(0.5); TweenService:Create(bStroke, TweenInfo.new(0.5), {Transparency = 0.8}):Play(); task.wait(0.5); TweenService:Create(bStroke, TweenInfo.new(0.5), {Transparency = 0}):Play() end end)
@@ -317,4 +287,4 @@ top.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch 
 top.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end end)
 U.InputChanged:Connect(function(i) if drag and (i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseMovement) then local d=i.Position-sP; pan.Position=UDim2.new(sPos.X.Scale,sPos.X.Offset+d.X,sPos.Y.Scale,sPos.Y.Offset+d.Y) end end)
 
-print("MICHAELXITADOO v35 UNIVERSAL CARREGADO!")
+print("MICHAELXITADOO v37 CARREGADO!")
