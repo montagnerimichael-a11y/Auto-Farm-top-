@@ -1,0 +1,216 @@
+-- PAINEL MONTAGNERIXIT - FREE FIRE STYLE (FUNCIONA 1ª E 3ª PESSOA)
+local P = game.Players.LocalPlayer
+local U = game:GetService("UserInputService")
+local R = game:GetService("RunService")
+local W = game:GetService("Workspace")
+local L = game:GetService("Lighting")
+local Cam = W.CurrentCamera
+
+local c = {Aimbot=false, ESP=false, Hitbox=false, Spd=false, Jmp=false, Full=false, FOV=150, Vel=50, JumpPower=100}
+local gui, pan, top, scr, bol, ch, hu, rt
+local lpE, lpA, lpU
+local espTags = {}
+
+local FF = {Bg=Color3.fromRGB(15,15,20), Top=Color3.fromRGB(25,10,10), Neon=Color3.fromRGB(255,50,50), Text=Color3.fromRGB(255,255,255), Btn=Color3.fromRGB(35,35,45), On=Color3.fromRGB(255,50,50), Off=Color3.fromRGB(50,50,60)}
+
+local function uC() ch=P.Character; hu=ch and ch:FindFirstChildOfClass("Humanoid"); rt=ch and ch:FindFirstChild("HumanoidRootPart") end
+
+-- Função para achar o jogador mais próximo na tela (Aimbot)
+local function getClosest()
+    local closest, dist = nil, math.huge
+    local center = Vector2.new(Cam.ViewportSize.X/2, Cam.ViewportSize.Y/2)
+    for _, p in ipairs(game.Players:GetPlayers()) do
+        if p ~= P and p.Character and p.Character:FindFirstChild("Head") and p.Character:FindFirstChildOfClass("Humanoid") and p.Character.Humanoid.Health > 0 then
+            local screenPos, onScreen = Cam:WorldToViewportPoint(p.Character.Head.Position)
+            if onScreen then
+                local d = (Vector2.new(screenPos.X, screenPos.Y) - center).Magnitude
+                if d < c.FOV and d < dist then
+                    dist = d
+                    closest = p.Character.Head
+                end
+            end
+        end
+    end
+    return closest
+end
+
+-- Loop do Aimbot (Suave, funciona em 1ª e 3ª pessoa)
+lpA = R.RenderStepped:Connect(function()
+    if c.Aimbot then
+        local target = getClosest()
+        if target then
+            -- Lerp deixa a mira suave, sem "trancos"
+            local targetCFrame = CFrame.new(Cam.CFrame.Position, target.Position)
+            Cam.CFrame = Cam.CFrame:Lerp(targetCFrame, 0.3)
+        end
+    end
+end)
+
+-- Loop de Utilidades (Speed, Jump, ESP, Hitbox)
+lpU = R.Heartbeat:Connect(function()
+    uC()
+    if not hu or not rt then return end
+    
+    if c.Spd then hu.WalkSpeed = c.Vel end
+    if c.Jmp then hu.JumpPower = c.JumpPower; hu.UseJumpPower = true end
+    if c.Full then L.Ambient = Color3.fromRGB(255,255,255); L.OutdoorAmbient = Color3.fromRGB(255,255,255); L.GlobalShadows = false end
+    
+    -- ESP e Hitbox
+    for _, p in ipairs(game.Players:GetPlayers()) do
+        if p ~= P and p.Character then
+            local pCh = p.Character
+            local pHum = pCh:FindFirstChildOfClass("Humanoid")
+            if pHum and pHum.Health > 0 then
+                -- ESP
+                if c.ESP and not espTags[p] then
+                    local hl = Instance.new("Highlight", pCh)
+                    hl.FillColor = Color3.fromRGB(255,0,0)
+                    hl.FillTransparency = 0.5
+                    hl.OutlineColor = Color3.fromRGB(255,255,255)
+                    
+                    local bb = Instance.new("BillboardGui", pCh.Head)
+                    bb.Size = UDim2.new(0,100,0,30)
+                    bb.AlwaysOnTop = true
+                    bb.Name = "ESP_TAG"
+                    local txt = Instance.new("TextLabel", bb)
+                    txt.Size = UDim2.new(1,0,1,0)
+                    txt.BackgroundTransparency = 1
+                    txt.Text = p.Name
+                    txt.TextColor3 = Color3.fromRGB(255,50,50)
+                    txt.TextStrokeTransparency = 0
+                    txt.Font = Enum.Font.GothamBold
+                    txt.TextSize = 14
+                    
+                    espTags[p] = {hl=hl, bb=bb, txt=txt}
+                elseif c.ESP and espTags[p] then
+                    local dist = math.floor((rt.Position - pCh.Head.Position).Magnitude)
+                    espTags[p].txt.Text = p.Name .. " [" .. dist .. "m]"
+                elseif not c.ESP and espTags[p] then
+                    espTags[p].hl:Destroy()
+                    espTags[p].bb:Destroy()
+                    espTags[p] = nil
+                end
+                
+                -- Hitbox Expander
+                local hrp = pCh:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    if c.Hitbox then
+                        hrp.Size = Vector3.new(15, 15, 15)
+                        hrp.Transparency = 0.7
+                        hrp.CanCollide = false
+                    else
+                        hrp.Size = Vector3.new(2, 2, 1)
+                        hrp.Transparency = 1
+                        hrp.CanCollide = true
+                    end
+                end
+            end
+        end
+    end
+end)
+-- INTERFACE FREE FIRE STYLE
+gui = Instance.new("ScreenGui", P.PlayerGui)
+gui.Name="montagneriXIT"; gui.ResetOnSpawn=false
+
+-- FOV Circle (Círculo de mira)
+local fovCircle = Instance.new("Frame", gui)
+fovCircle.Size = UDim2.new(0, c.FOV*2, 0, c.FOV*2)
+fovCircle.Position = UDim2.new(0.5, -c.FOV, 0.5, -c.FOV)
+fovCircle.BackgroundTransparency = 1
+fovCircle.BorderSizePixel = 0
+fovCircle.Visible = false
+local fovStroke = Instance.new("UIStroke", fovCircle)
+fovStroke.Color = Color3.fromRGB(255,0,0)
+fovStroke.Thickness = 1.5
+fovStroke.Transparency = 0.5
+Instance.new("UICorner", fovCircle).CornerRadius = UDim.new(1,0)
+
+-- Painel
+pan=Instance.new("Frame", gui); pan.Size=UDim2.new(0,280,0,420); pan.Position=UDim2.new(0.5,-140,0.5,-210); pan.BackgroundColor3=FF.Bg; pan.BorderSizePixel=0
+Instance.new("UICorner",pan).CornerRadius=UDim.new(0,10)
+
+-- Topo (Estilo FF)
+top=Instance.new("Frame", pan); top.Size=UDim2.new(1,0,0,45); top.BackgroundColor3=FF.Top; top.BorderSizePixel=0
+Instance.new("UICorner",top).CornerRadius=UDim.new(0,10)
+local ti=Instance.new("TextLabel", top); ti.Size=UDim2.new(1,-100,1,0); ti.Position=UDim2.new(0,12,0,0); ti.BackgroundTransparency=1; ti.Text="montagneriXIT"; ti.TextXAlignment=Enum.TextXAlignment.Left; ti.Font=Enum.Font.GothamBlack; ti.TextSize=18; ti.TextColor3=FF.Neon
+
+local close = Instance.new("TextButton", top); close.Size=UDim2.new(0,25,0,25); close.Position=UDim2.new(1,-32,0.5,-12); close.Text="X"; close.BackgroundColor3=Color3.fromRGB(200,30,30); close.TextColor3=Color3.fromRGB(255,255,255); close.Font=Enum.Font.GothamBold
+Instance.new("UICorner",close).CornerRadius=UDim.new(0,5)
+close.MouseButton1Click:Connect(function() gui:Destroy() end)
+
+local minBtn = Instance.new("TextButton", top); minBtn.Size=UDim2.new(0,25,0,25); minBtn.Position=UDim2.new(1,-62,0.5,-12); minBtn.Text="-"; minBtn.BackgroundColor3=FF.Btn; minBtn.TextColor3=Color3.fromRGB(255,255,255); minBtn.Font=Enum.Font.GothamBold
+Instance.new("UICorner",minBtn).CornerRadius=UDim.new(0,5)
+minBtn.MouseButton1Click:Connect(function() pan.Visible=false; bol.Visible=true end)
+
+-- Linha Vermelha Neon embaixo do topo
+local line = Instance.new("Frame", pan); line.Size=UDim2.new(1,0,0,2); line.Position=UDim2.new(0,0,0,45); line.BackgroundColor3=FF.Neon; line.BorderSizePixel=0
+
+-- Indicador de Câmera (1ª / 3ª Pessoa)
+local camLabel = Instance.new("TextLabel", pan); camLabel.Size=UDim2.new(1,0,0,20); camLabel.Position=UDim2.new(0,0,0,47); camLabel.BackgroundTransparency=1; camLabel.Text="Modo: 3ª Pessoa"; camLabel.TextColor3=Color3.fromRGB(200,200,200); camLabel.Font=Enum.Font.GothamBold; camLabel.TextSize=11
+R.Heartbeat:Connect(function()
+    if P.CameraMode == Enum.CameraMode.LockFirstPerson then
+        camLabel.Text = "Modo: 1ª Pessoa"
+    else
+        camLabel.Text = "Modo: 3ª Pessoa"
+    end
+end)
+
+-- Scrolling Frame
+scr=Instance.new("ScrollingFrame", pan); scr.Size=UDim2.new(1,-12,1,-70); scr.Position=UDim2.new(0,6,0,68); scr.BackgroundTransparency=1; scr.BorderSizePixel=0; scr.ScrollBarThickness=3; scr.ScrollBarImageColor3=FF.Neon; scr.CanvasSize=UDim2.new(0,0,0,500)
+
+-- Função para criar botão toggle FF Style
+local function makeBtn(txt, y, cb)
+    local b = Instance.new("TextButton", scr); b.Size=UDim2.new(0.9,0,0,35); b.Position=UDim2.new(0.05,0,0,y); b.Text=txt.."  [ OFF ]"; b.BackgroundColor3=FF.Btn; b.TextColor3=Color3.fromRGB(200,200,200); b.Font=Enum.Font.GothamBold; b.TextSize=13; b.TextXAlignment=Enum.TextXAlignment.Left
+    local pad = Instance.new("UIPadding", b); pad.PaddingLeft = UDim.new(0,10)
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0,6)
+    
+    local on = false
+    b.MouseButton1Click:Connect(function()
+        on=not on
+        b.Text=txt..(on and "  [ ON ]" or "  [ OFF ]")
+        b.BackgroundColor3=on and FF.On or FF.Btn
+        b.TextColor3=on and Color3.fromRGB(255,255,255) or Color3.fromRGB(200,200,200)
+        if cb then cb(on) end
+    end)
+end
+
+-- Botões
+makeBtn("AIMBOT (CAMERA)", 10, function(v) c.Aimbot=v; fovCircle.Visible=v end)
+makeBtn("ESP (VER INIMIGOS)", 55, function(v) c.ESP=v; if not v then for p, t in pairs(espTags) do t.hl:Destroy(); t.bb:Destroy(); espTags[p]=nil end end end)
+makeBtn("HITBOX EXPANDER", 100, function(v) c.Hitbox=v end)
+makeBtn("SPEED", 145, function(v) c.Spd=v end)
+makeBtn("JUMP POWER", 190, function(v) c.Jmp=v end)
+makeBtn("FULLBRIGHT (CLARIDADE)", 235, function(v) c.Full=v; if not v then L.Ambient = Color3.fromRGB(70,70,70); L.OutdoorAmbient = Color3.fromRGB(128,128,128); L.GlobalShadows = true end end)
+
+-- Controle FOV
+local fovLabel = Instance.new("TextLabel", scr); fovLabel.Size=UDim2.new(0.9,0,0,20); fovLabel.Position=UDim2.new(0.05,0,0,285); fovLabel.BackgroundTransparency=1; fovLabel.Text="FOV (Área de Mira)"; fovLabel.TextColor3=FF.Neon; fovLabel.Font=Enum.Font.GothamBold; fovLabel.TextSize=12; fovLabel.TextXAlignment=Enum.TextXAlignment.Left
+
+local fovMinus = Instance.new("TextButton", scr); fovMinus.Size=UDim2.new(0.4,0,0,30); fovMinus.Position=UDim2.new(0.05,0,0,310); fovMinus.Text="- MENOS"; fovMinus.BackgroundColor3=FF.Btn; fovMinus.TextColor3=Color3.fromRGB(255,255,255); fovMinus.Font=Enum.Font.GothamBold
+Instance.new("UICorner", fovMinus).CornerRadius = UDim.new(0,6)
+
+local fovPlus = Instance.new("TextButton", scr); fovPlus.Size=UDim2.new(0.4,0,0,30); fovPlus.Position=UDim2.new(0.55,0,0,310); fovPlus.Text="+ MAIS"; fovPlus.BackgroundColor3=FF.Btn; fovPlus.TextColor3=Color3.fromRGB(255,255,255); fovPlus.Font=Enum.Font.GothamBold
+Instance.new("UICorner", fovPlus).CornerRadius = UDim.new(0,6)
+
+local function updateFOV()
+    fovCircle.Size = UDim2.new(0, c.FOV*2, 0, c.FOV*2)
+    fovCircle.Position = UDim2.new(0.5, -c.FOV, 0.5, -c.FOV)
+end
+
+fovMinus.MouseButton1Click:Connect(function() c.FOV = math.max(50, c.FOV - 10); updateFOV() end)
+fovPlus.MouseButton1Click:Connect(function() c.FOV = math.min(400, c.FOV + 10); updateFOV() end)
+
+-- Bolinha Flutuante Free Fire (Gradiente Laranja/Vermelho)
+bol = Instance.new("TextButton", gui); bol.Size=UDim2.new(0,60,0,60); bol.Position=UDim2.new(0,20,0,200); bol.Text="X"; bol.TextSize=30; bol.Font=Enum.Font.GothamBlack; bol.TextColor3=Color3.fromRGB(255,255,255); bol.Visible=false
+Instance.new("UICorner",bol).CornerRadius=UDim.new(1,0)
+local bStroke = Instance.new("UIStroke", bol); bStroke.Color = FF.Neon; bStroke.Thickness = 3
+local bGrad = Instance.new("UIGradient", bol); bGrad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(255,100,0)), ColorSequenceKeypoint.new(1, Color3.fromRGB(150,0,0))}); bGrad.Rotation = 45
+
+bol.MouseButton1Click:Connect(function() pan.Visible=true; bol.Visible=false end)
+
+-- Arrastar Painel
+local drag = false; local sP, sPos
+top.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then drag=true; sP=i.Position; sPos=pan.Position end end)
+top.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end end)
+U.InputChanged:Connect(function(i) if drag and (i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseMovement) then local d=i.Position-sP; pan.Position=UDim2.new(sPos.X.Scale,sPos.X.Offset+d.X,sPos.Y.Scale,sPos.Y.Offset+d.Y) end end)
+
+print("montagneriXIT CARREGADO (1ª E 3ª PESSOA)!")
