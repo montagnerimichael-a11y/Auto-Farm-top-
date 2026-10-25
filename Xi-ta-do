@@ -1,4 +1,4 @@
--- PAINEL MONTAGNERIXIT v5 (LÓGICA)
+-- PAINEL WHATSAPP DISFARÇADO (LÓGICA FINAL)
 if getgenv().MontagneriXIT_Cleanup then pcall(getgenv().MontagneriXIT_Cleanup) end
 
 local P = game.Players.LocalPlayer
@@ -15,11 +15,11 @@ local lpA, lpU
 local espTags = {}
 local toggles = {}
 
-local FF = {Bg=Color3.fromRGB(10, 5, 5), Top=Color3.fromRGB(40,0,0), Neon=Color3.fromRGB(255,0,0), Text=Color3.fromRGB(255,255,255), Btn=Color3.fromRGB(30,30,30), On=Color3.fromRGB(200,0,0), Off=Color3.fromRGB(30,30,30)}
+local FF = {Bg=Color3.fromRGB(11, 20, 26), Top=Color3.fromRGB(0, 168, 132), Btn=Color3.fromRGB(32, 44, 51), On=Color3.fromRGB(0, 168, 132), Off=Color3.fromRGB(32, 44, 51)}
 
 local function uC() ch=P.Character; hu=ch and ch:FindFirstChildOfClass("Humanoid"); rt=ch and ch:FindFirstChild("HumanoidRootPart") end
 
--- FUNÇÃO DE LIMPAR TUDO
+-- FUNÇÃO DE LIMPAR TUDO (Apenas quando clica no X)
 local function DisableAll()
     for k, _ in pairs(c) do if type(c[k]) == "boolean" then c[k] = false end end
     uC()
@@ -35,8 +35,11 @@ local function DisableAll()
     
     for _, p in ipairs(game.Players:GetPlayers()) do
         if p ~= P and p.Character then
-            local hrp = p.Character:FindFirstChild("HumanoidRootPart")
-            if hrp then hrp.Size = Vector3.new(2, 2, 1); hrp.Transparency = 1; hrp.CanCollide = true end
+            local head = p.Character:FindFirstChild("Head")
+            if head then 
+                head.Size = Vector3.new(2, 1, 1)
+                head.Transparency = 0
+            end
         end
     end
     
@@ -49,7 +52,7 @@ local function DisableAll()
 end
 getgenv().MontagneriXIT_Cleanup = DisableAll
 
--- AIMBOT E AUTO SHOOT
+-- AIMBOT (GRUDAR NA CABEÇA)
 local function getClosest()
     local closest, dist = nil, math.huge
     local center = Vector2.new(Cam.ViewportSize.X/2, Cam.ViewportSize.Y/2)
@@ -70,7 +73,7 @@ lpA = R.RenderStepped:Connect(function()
     if c.Aimbot then
         local target = getClosest()
         if target then
-            Cam.CFrame = Cam.CFrame:Lerp(CFrame.new(Cam.CFrame.Position, target.Position), 0.3)
+            Cam.CFrame = CFrame.new(Cam.CFrame.Position, target.Position)
             if c.AutoShoot then
                 pcall(function() VIM:SendMouseButtonEvent(Cam.ViewportSize.X/2, Cam.ViewportSize.Y/2, 0, true, game, 1) end)
                 task.wait(0.05)
@@ -80,23 +83,22 @@ lpA = R.RenderStepped:Connect(function()
     end
 end)
 
--- INFINITE JUMP
-hu = P.Character and P.Character:FindFirstChildOfClass("Humanoid")
-if hu then
-    hu.StateChanged:Connect(function(old, new)
-        if c.InfJump and new == Enum.HumanoidStateType.Landed then hu:ChangeState(Enum.HumanoidStateType.Jumping) end
-    end)
-end
+-- RECONEXÃO AO MORRER
 P.CharacterAdded:Connect(function(newChar)
-    task.wait(1); hu = newChar:FindFirstChildOfClass("Humanoid")
+    task.wait(1)
+    ch = newChar
+    hu = ch:FindFirstChildOfClass("Humanoid")
+    rt = ch:FindFirstChild("HumanoidRootPart")
+    
     if hu then
         hu.StateChanged:Connect(function(old, new)
             if c.InfJump and new == Enum.HumanoidStateType.Landed then hu:ChangeState(Enum.HumanoidStateType.Jumping) end
         end)
+        if c.Spd then hu.WalkSpeed = c.Vel end
     end
 end)
 
--- LOOP PRINCIPAL (Speed, Fly, FPS, ESP, Hitbox)
+-- LOOP PRINCIPAL
 if lpU then lpU:Disconnect() end
 lpU = R.Heartbeat:Connect(function()
     uC()
@@ -131,11 +133,11 @@ lpU = R.Heartbeat:Connect(function()
             if pHum and pHum.Health > 0 then
                 if c.ESP and not espTags[p] then
                     local hl = Instance.new("Highlight", pCh)
-                    hl.FillColor = Color3.fromRGB(255,0,0); hl.FillTransparency = 0.5; hl.OutlineColor = Color3.fromRGB(255,255,255)
+                    hl.FillColor = Color3.fromRGB(0, 168, 132); hl.FillTransparency = 0.5; hl.OutlineColor = Color3.fromRGB(255,255,255)
                     local bb = Instance.new("BillboardGui", pCh.Head)
                     bb.Size = UDim2.new(0,100,0,30); bb.AlwaysOnTop = true
                     local txt = Instance.new("TextLabel", bb)
-                    txt.Size = UDim2.new(1,0,1,0); txt.BackgroundTransparency = 1; txt.Text = p.Name; txt.TextColor3 = Color3.fromRGB(255,50,50); txt.TextStrokeTransparency = 0; txt.Font = Enum.Font.GothamBold; txt.TextSize = 14
+                    txt.Size = UDim2.new(1,0,1,0); txt.BackgroundTransparency = 1; txt.Text = p.Name; txt.TextColor3 = Color3.fromRGB(0, 168, 132); txt.TextStrokeTransparency = 0; txt.Font = Enum.Font.GothamBold; txt.TextSize = 14
                     espTags[p] = {hl=hl, bb=bb, txt=txt}
                 elseif c.ESP and espTags[p] then
                     local dist = math.floor((rt.Position - pCh.Head.Position).Magnitude)
@@ -144,53 +146,45 @@ lpU = R.Heartbeat:Connect(function()
                     espTags[p].hl:Destroy(); espTags[p].bb:Destroy(); espTags[p] = nil
                 end
                 
-                local hrp = pCh:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    if c.Hitbox then hrp.Size = Vector3.new(15, 15, 15); hrp.Transparency = 0.7; hrp.CanCollide = false
-                    else hrp.Size = Vector3.new(2, 2, 1); hrp.Transparency = 1; hrp.CanCollide = true end
+                local head = pCh:FindFirstChild("Head")
+                if head then
+                    if c.Hitbox then 
+                        head.Size = Vector3.new(15, 15, 15)
+                        head.Transparency = 0.6
+                        head.CanCollide = false
+                    else 
+                        head.Size = Vector3.new(2, 1, 1)
+                        head.Transparency = 0
+                        head.CanCollide = true
+                    end
                 end
             end
         end
     end
 end)
 
--- ANTI-AFK
 task.spawn(function()
     while task.wait(60) do
         pcall(function() VIM:SendKeyEvent(true, "W", false, game); task.wait(0.1); VIM:SendKeyEvent(false, "W", false, game) end)
     end
 end)
-
-P.CharacterAdded:Connect(function() task.wait(1); DisableAll() end)
--- INTERFACE TEMA PALHAÇO MEDONHO + NOTIFICAÇÕES + RISADA
+-- INTERFACE DISFARÇADA DE WHATSAPP 🟢
 local TweenService = game:GetService("TweenService")
-local SoundService = game:GetService("SoundService")
+gui = Instance.new("ScreenGui", P.PlayerGui); gui.Name="WhatsApp"; gui.ResetOnSpawn=false
 
-gui = Instance.new("ScreenGui", P.PlayerGui); gui.Name="montagneriXIT"; gui.ResetOnSpawn=false
-
--- SOM DE RISADA MALVADA
-local laughSound = Instance.new("Sound", SoundService)
-laughSound.SoundId = "rbxassetid://131353515" 
-laughSound.Volume = 3
-laughSound:Play()
-
--- FUNÇÃO DE NOTIFICAÇÃO 🩸
 local function Notify(txt, isOn)
-    for _, child in pairs(gui:GetChildren()) do
-        if child.Name == "Notification" then child:Destroy() end
-    end
-
+    for _, child in pairs(gui:GetChildren()) do if child.Name == "Notification" then child:Destroy() end end
     local notif = Instance.new("Frame", gui)
     notif.Name = "Notification"
-    notif.Size = UDim2.new(0, 250, 0, 45)
+    notif.Size = UDim2.new(0, 250, 0, 50)
     notif.Position = UDim2.new(0.5, -125, 0, -60)
-    notif.BackgroundColor3 = isOn and Color3.fromRGB(60, 0, 0) or Color3.fromRGB(20, 20, 20)
+    notif.BackgroundColor3 = Color3.fromRGB(32, 44, 51)
     notif.BorderSizePixel = 0
     notif.ZIndex = 100
     Instance.new("UICorner", notif).CornerRadius = UDim.new(0, 8)
-
+    
     local stroke = Instance.new("UIStroke", notif)
-    stroke.Color = isOn and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 100, 100)
+    stroke.Color = Color3.fromRGB(0, 168, 132)
     stroke.Thickness = 2
 
     local label = Instance.new("TextLabel", notif)
@@ -198,8 +192,8 @@ local function Notify(txt, isOn)
     label.BackgroundTransparency = 1
     label.Text = txt
     label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.Font = Enum.Font.GothamBlack
-    label.TextSize = 13
+    label.Font = Enum.Font.GothamMedium
+    label.TextSize = 14
     label.ZIndex = 101
 
     TweenService:Create(notif, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -125, 0, 50)}):Play()
@@ -213,40 +207,35 @@ local function Notify(txt, isOn)
     end)
 end
 
-local fovCircle = Instance.new("Frame", gui)
-fovCircle.Size = UDim2.new(0, c.FOV*2, 0, c.FOV*2); fovCircle.Position = UDim2.new(0.5, -c.FOV, 0.5, -c.FOV); fovCircle.BackgroundTransparency = 1; fovCircle.Visible = false
-local fovStroke = Instance.new("UIStroke", fovCircle); fovStroke.Color = Color3.fromRGB(255,0,0); fovStroke.Thickness = 1.5; fovStroke.Transparency = 0.5
-Instance.new("UICorner", fovCircle).CornerRadius = UDim.new(1,0)
-
-pan=Instance.new("Frame", gui); pan.Size=UDim2.new(0,280,0,420); pan.Position=UDim2.new(0.5,-140,0.5,-210); pan.BackgroundColor3=Color3.fromRGB(10, 5, 5); pan.BorderSizePixel=0; pan.ClipsDescendants = true
+pan=Instance.new("Frame", gui); pan.Size=UDim2.new(0,280,0,420); pan.Position=UDim2.new(0.5,-140,0.5,-210); pan.BackgroundColor3=Color3.fromRGB(11, 20, 26); pan.BorderSizePixel=0; pan.ClipsDescendants = true
 Instance.new("UICorner",pan).CornerRadius=UDim.new(0,10)
 
-local bgM = Instance.new("TextLabel", pan); bgM.Size = UDim2.new(1, 0, 1, 0); bgM.BackgroundTransparency = 1; bgM.Text = "M"; bgM.TextColor3 = Color3.fromRGB(50, 0, 0); bgM.TextTransparency = 0.3; bgM.TextScaled = true; bgM.Font = Enum.Font.GothamBlack; bgM.TextStrokeTransparency = 0; bgM.TextStrokeColor3 = Color3.fromRGB(0, 0, 0); bgM.ZIndex = 1; bgM.Position = UDim2.new(0, 0, 0.1, 0)
+local bgM = Instance.new("TextLabel", pan); bgM.Size = UDim2.new(1, 0, 1, 0); bgM.BackgroundTransparency = 1; bgM.Text = "M"; bgM.TextColor3 = Color3.fromRGB(20, 40, 40); bgM.TextTransparency = 0.5; bgM.TextScaled = true; bgM.Font = Enum.Font.GothamBlack; bgM.ZIndex = 1; bgM.Position = UDim2.new(0, 0, 0.1, 0)
 
-top=Instance.new("Frame", pan); top.Size=UDim2.new(1,0,0,45); top.BackgroundColor3=Color3.fromRGB(40,0,0); top.BorderSizePixel=0; top.ZIndex = 2
+top=Instance.new("Frame", pan); top.Size=UDim2.new(1,0,0,50); top.BackgroundColor3=Color3.fromRGB(0, 168, 132); top.BorderSizePixel=0; top.ZIndex = 2
 Instance.new("UICorner",top).CornerRadius=UDim.new(0,10)
-local ti=Instance.new("TextLabel", top); ti.Size=UDim2.new(1,-100,1,0); ti.Position=UDim2.new(0,12,0,0); ti.BackgroundTransparency=1; ti.Text="🤡 montagneriXIT 🩸"; ti.TextXAlignment=Enum.TextXAlignment.Left; ti.Font=Enum.Font.GothamBlack; ti.TextSize=16; ti.TextColor3=Color3.fromRGB(255,0,0); ti.ZIndex = 3
 
-local close = Instance.new("TextButton", top); close.Size=UDim2.new(0,25,0,25); close.Position=UDim2.new(1,-32,0.5,-12); close.Text="X"; close.BackgroundColor3=Color3.fromRGB(150,0,0); close.TextColor3=Color3.fromRGB(255,255,255); close.Font=Enum.Font.GothamBold; close.ZIndex = 3
+local logo = Instance.new("ImageLabel", top)
+logo.Size = UDim2.new(0, 35, 0, 35)
+logo.Position = UDim2.new(0, 10, 0.5, -17)
+logo.BackgroundTransparency = 1
+logo.Image = "rbxassetid://850930879" 
+logo.ZIndex = 3
+
+local ti=Instance.new("TextLabel", top); ti.Size=UDim2.new(1,-100,1,0); ti.Position=UDim2.new(0,50,0,0); ti.BackgroundTransparency=1; ti.Text="WhatsApp"; ti.TextXAlignment=Enum.TextXAlignment.Left; ti.Font=Enum.Font.GothamBold; ti.TextSize=18; ti.TextColor3=Color3.fromRGB(255,255,255); ti.ZIndex = 3
+
+local close = Instance.new("TextButton", top); close.Size=UDim2.new(0,25,0,25); close.Position=UDim2.new(1,-32,0.5,-12); close.Text="X"; close.BackgroundColor3=Color3.fromRGB(200,30,30); close.TextColor3=Color3.fromRGB(255,255,255); close.Font=Enum.Font.GothamBold; close.ZIndex = 3
 Instance.new("UICorner",close).CornerRadius=UDim.new(0,5)
 close.MouseButton1Click:Connect(function() DisableAll() gui:Destroy() end)
 
-local minBtn = Instance.new("TextButton", top); minBtn.Size=UDim2.new(0,25,0,25); minBtn.Position=UDim2.new(1,-62,0.5,-12); minBtn.Text="-"; minBtn.BackgroundColor3=Color3.fromRGB(30,30,30); minBtn.TextColor3=Color3.fromRGB(255,255,255); minBtn.Font=Enum.Font.GothamBold; minBtn.ZIndex = 3
+local minBtn = Instance.new("TextButton", top); minBtn.Size=UDim2.new(0,25,0,25); minBtn.Position=UDim2.new(1,-62,0.5,-12); minBtn.Text="-"; minBtn.BackgroundColor3=Color3.fromRGB(32, 44, 51); minBtn.TextColor3=Color3.fromRGB(255,255,255); minBtn.Font=Enum.Font.GothamBold; minBtn.ZIndex = 3
 Instance.new("UICorner",minBtn).CornerRadius=UDim.new(0,5)
 minBtn.MouseButton1Click:Connect(function() pan.Visible=false; bol.Visible=true end)
 
-local line = Instance.new("Frame", pan); line.Size=UDim2.new(1,0,0,2); line.Position=UDim2.new(0,0,0,45); line.BackgroundColor3=Color3.fromRGB(150,0,0); line.BorderSizePixel=0; line.ZIndex = 2
-
-local camLabel = Instance.new("TextLabel", pan); camLabel.Size=UDim2.new(1,0,0,20); camLabel.Position=UDim2.new(0,0,0,47); camLabel.BackgroundTransparency=1; camLabel.Text="Modo: 3ª Pessoa"; camLabel.TextColor3=Color3.fromRGB(150,150,150); camLabel.Font=Enum.Font.GothamBold; camLabel.TextSize=11; camLabel.ZIndex = 2
-R.Heartbeat:Connect(function()
-    if P.CameraMode == Enum.CameraMode.LockFirstPerson then camLabel.Text = "Modo: 1ª Pessoa"
-    else camLabel.Text = "Modo: 3ª Pessoa" end
-end)
-
-scr=Instance.new("ScrollingFrame", pan); scr.Size=UDim2.new(1,-12,1,-70); scr.Position=UDim2.new(0,6,0,68); scr.BackgroundTransparency=1; scr.BorderSizePixel=0; scr.ScrollBarThickness=3; scr.ScrollBarImageColor3=Color3.fromRGB(150,0,0); scr.CanvasSize=UDim2.new(0,0,0,600); scr.ZIndex = 2
+scr=Instance.new("ScrollingFrame", pan); scr.Size=UDim2.new(1,-12,1,-70); scr.Position=UDim2.new(0,6,0,60); scr.BackgroundTransparency=1; scr.BorderSizePixel=0; scr.ScrollBarThickness=3; scr.ScrollBarImageColor3=Color3.fromRGB(0, 168, 132); scr.CanvasSize=UDim2.new(0,0,0,600); scr.ZIndex = 2
 
 local function makeBtn(txt, y, key, cb)
-    local b = Instance.new("TextButton", scr); b.Size=UDim2.new(0.9,0,0,35); b.Position=UDim2.new(0.05,0,0,y); b.Text=txt.."  [ OFF ]"; b.BackgroundColor3=Color3.fromRGB(30,30,30); b.TextColor3=Color3.fromRGB(150,150,150); b.Font=Enum.Font.GothamBold; b.TextSize=13; b.TextXAlignment=Enum.TextXAlignment.Left; b.ZIndex = 3
+    local b = Instance.new("TextButton", scr); b.Size=UDim2.new(0.9,0,0,35); b.Position=UDim2.new(0.05,0,0,y); b.Text=txt.."  [ OFF ]"; b.BackgroundColor3=Color3.fromRGB(32, 44, 51); b.TextColor3=Color3.fromRGB(200,200,200); b.Font=Enum.Font.GothamBold; b.TextSize=13; b.TextXAlignment=Enum.TextXAlignment.Left; b.ZIndex = 3
     local pad = Instance.new("UIPadding", b); pad.PaddingLeft = UDim.new(0,10)
     Instance.new("UICorner", b).CornerRadius = UDim.new(0,6)
     toggles[key] = b
@@ -254,18 +243,18 @@ local function makeBtn(txt, y, key, cb)
         local on = not c[key]
         c[key] = on
         b.Text = txt..(on and "  [ ON ]" or "  [ OFF ]")
-        b.BackgroundColor3 = on and Color3.fromRGB(200,0,0) or Color3.fromRGB(30,30,30)
-        b.TextColor3 = on and Color3.fromRGB(255,255,255) or Color3.fromRGB(150,150,150)
+        b.BackgroundColor3 = on and Color3.fromRGB(0, 168, 132) or Color3.fromRGB(32, 44, 51)
+        b.TextColor3 = on and Color3.fromRGB(255,255,255) or Color3.fromRGB(200,200,200)
         
         if on then Notify("FUNÇÃO ATIVADA! 👍", true) else Notify("FUNÇÃO DESATIVADA! 🛑", false) end
         if cb then cb(on) end
     end)
 end
 
-makeBtn("AIMBOT (CAMERA)", 10, "Aimbot", function(v) fovCircle.Visible=v end)
+makeBtn("AIMBOT (CAMERA)", 10, "Aimbot")
 makeBtn("AUTO SHOOT (ATIRAR AUTO)", 55, "AutoShoot")
 makeBtn("ESP (VER INIMIGOS)", 100, "ESP")
-makeBtn("HITBOX EXPANDER", 145, "Hitbox")
+makeBtn("HITBOX EXPANDER (HEAD)", 145, "Hitbox")
 makeBtn("SPEED", 190, "Spd")
 makeBtn("INFINITE JUMP (PULO INF)", 235, "InfJump")
 makeBtn("FLY (VOAR)", 280, "Fly")
@@ -273,31 +262,18 @@ makeBtn("FULLBRIGHT (CLARIDADE)", 325, "Full")
 makeBtn("FPS BOOST (TIRAR LAG)", 370, "FpsBoost")
 makeBtn("NO RECOIL (SEM RECUO)", 415, "NoRecoil")
 
-local fovLabel = Instance.new("TextLabel", scr); fovLabel.Size=UDim2.new(0.9,0,0,20); fovLabel.Position=UDim2.new(0.05,0,0,465); fovLabel.BackgroundTransparency=1; fovLabel.Text="FOV (Área de Mira)"; fovLabel.TextColor3=Color3.fromRGB(200,0,0); fovLabel.Font=Enum.Font.GothamBold; fovLabel.TextSize=12; fovLabel.TextXAlignment=Enum.TextXAlignment.Left; fovLabel.ZIndex = 3
-local fovMinus = Instance.new("TextButton", scr); fovMinus.Size=UDim2.new(0.4,0,0,30); fovMinus.Position=UDim2.new(0.05,0,0,490); fovMinus.Text="- MENOS"; fovMinus.BackgroundColor3=Color3.fromRGB(30,30,30); fovMinus.TextColor3=Color3.fromRGB(255,255,255); fovMinus.Font=Enum.Font.GothamBold; fovMinus.ZIndex = 3
-Instance.new("UICorner", fovMinus).CornerRadius = UDim.new(0,6)
-local fovPlus = Instance.new("TextButton", scr); fovPlus.Size=UDim2.new(0.4,0,0,30); fovPlus.Position=UDim2.new(0.55,0,0,490); fovPlus.Text="+ MAIS"; fovPlus.BackgroundColor3=Color3.fromRGB(30,30,30); fovPlus.TextColor3=Color3.fromRGB(255,255,255); fovPlus.Font=Enum.Font.GothamBold; fovPlus.ZIndex = 3
-Instance.new("UICorner", fovPlus).CornerRadius = UDim.new(0,6)
-local function updateFOV() fovCircle.Size = UDim2.new(0, c.FOV*2, 0, c.FOV*2); fovCircle.Position = UDim2.new(0.5, -c.FOV, 0.5, -c.FOV) end
-fovMinus.MouseButton1Click:Connect(function() c.FOV = math.max(50, c.FOV - 10); updateFOV() end)
-fovPlus.MouseButton1Click:Connect(function() c.FOV = math.min(400, c.FOV + 10); updateFOV() end)
-
--- BOLINHA PALHAÇO
-bol = Instance.new("TextButton", gui); bol.Size=UDim2.new(0,65,0,65); bol.Position=UDim2.new(0,20,0,200); bol.Text="🤡"; bol.TextSize=35; bol.Font=Enum.Font.GothamBlack; bol.TextColor3=Color3.fromRGB(255,255,255); bol.Visible=false; bol.BackgroundColor3 = Color3.fromRGB(0,0,0)
+bol = Instance.new("ImageButton", gui); bol.Size=UDim2.new(0,60,0,60); bol.Position=UDim2.new(0,20,0,200); bol.Image = "rbxassetid://850930879"; bol.Visible=false; bol.BackgroundColor3 = Color3.fromRGB(0, 168, 132)
 Instance.new("UICorner",bol).CornerRadius=UDim.new(1,0)
-local bStroke = Instance.new("UIStroke", bol); bStroke.Color = Color3.fromRGB(255,0,0); bStroke.Thickness = 3
-task.spawn(function() while bol.Parent do task.wait(0.5); TweenService:Create(bStroke, TweenInfo.new(0.5), {Transparency = 0.8}):Play(); task.wait(0.5); TweenService:Create(bStroke, TweenInfo.new(0.5), {Transparency = 0}):Play() end end)
-local bGrad = Instance.new("UIGradient", bol); bGrad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(80,0,0)), ColorSequenceKeypoint.new(1, Color3.fromRGB(0,0,0))}); bGrad.Rotation = 45
+local bStroke = Instance.new("UIStroke", bol); bStroke.Color = Color3.fromRGB(255,255,255); bStroke.Thickness = 2
 
 local bDrag = false; local bStart, bStartPos
 bol.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then bDrag = true; bStart = i.Position; bStartPos = bol.Position end end)
 bol.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then if bDrag then if (i.Position - bStart).Magnitude < 10 then pan.Visible = true; bol.Visible = false end; bDrag = false end end end)
 U.InputChanged:Connect(function(i) if bDrag and (i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseMovement) then local d = i.Position - bStart; bol.Position = UDim2.new(bStartPos.X.Scale, bStartPos.X.Offset + d.X, bStartPos.Y.Scale, bStartPos.Y.Offset + d.Y) end end)
 
--- Arrastar Painel
 local drag = false; local sP, sPos
 top.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then drag=true; sP=i.Position; sPos=pan.Position end end)
 top.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end end)
 U.InputChanged:Connect(function(i) if drag and (i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseMovement) then local d=i.Position-sP; pan.Position=UDim2.new(sPos.X.Scale,sPos.X.Offset+d.X,sPos.Y.Scale,sPos.Y.Offset+d.Y) end end)
 
-print("montagneriXIT v5 FINAL CARREGADO!")
+print("WhatsApp Hub (Disguised) CARREGADO!")
