@@ -1,4 +1,4 @@
--- PAINEL MACABRO MICHAELXITADOO (LÓGICA v28 - SEPARADO)
+-- PAINEL MACABRO MICHAELXITADOO (LÓGICA v29 - HITBOX NORMAL E CONGELAR)
 if getgenv().MontagneriXIT_Cleanup then pcall(getgenv().MontagneriXIT_Cleanup) end
 
 local P = game.Players.LocalPlayer
@@ -8,7 +8,7 @@ local W = game:GetService("Workspace")
 local L = game:GetService("Lighting")
 local Cam = W.CurrentCamera
 
-local c = {Aimbot=false, Hitbox=false, ESP=false, Spd=false, Jmp=false, Full=false, AutoShoot=false, InfJump=false, Fly=false, FpsBoost=false, NoRecoil=false, AntiHack=false, FOV=150, Vel=50, JumpPower=100}
+local c = {Aimbot=false, HitboxNormal=false, HitboxCongelar=false, ESP=false, Spd=false, Jmp=false, Full=false, AutoShoot=false, InfJump=false, Fly=false, FpsBoost=false, NoRecoil=false, AntiHack=false, FOV=150, Vel=50, JumpPower=100}
 local gui, pan, top, scr, bol, ch, hu, rt, bv, bav
 local lpA, lpU
 local espTags = {}
@@ -32,7 +32,7 @@ local function DisableAll()
         espTags[p] = nil
     end
     
-    -- Restaura cabeça dos inimigos
+    -- Limpa Hitboxes
     for _, p in ipairs(game.Players:GetPlayers()) do
         if p.Character then
             local head = p.Character:FindFirstChild("Head")
@@ -40,6 +40,8 @@ local function DisableAll()
                 head.Size = Vector3.new(2, 1, 1)
                 head.Transparency = 0
                 head.CanCollide = true
+                local hb = head:FindFirstChild("HitboxBolha")
+                if hb then hb:Destroy() end
             end
         end
     end
@@ -81,7 +83,6 @@ end
 
 if lpA then lpA:Disconnect() end
 lpA = R.RenderStepped:Connect(function()
-    -- AIMBOT SEPARADO (Só a mira)
     if c.Aimbot then
         local target = getClosest()
         if target then
@@ -89,7 +90,6 @@ lpA = R.RenderStepped:Connect(function()
         end
     end
     
-    -- AUTO SHOOT SEPARADO
     if c.AutoShoot and ch then
         local target = getClosest()
         if target then
@@ -170,21 +170,51 @@ lpU = R.Heartbeat:Connect(function()
                     espTags[p] = nil
                 end
                 
-                -- HITBOX 30X SEPARADA
+                -- SISTEMA DE HITBOX DUPLA
                 local head = pCh:FindFirstChild("Head")
                 if head then
-                    if c.Hitbox then
+                    if c.HitboxCongelar then
+                        -- MODO CONGELAR (Muda o tamanho da cabeça real)
                         if head.Size ~= Vector3.new(30, 30, 30) then
                             head.Size = Vector3.new(30, 30, 30)
                             head.Transparency = 0.5
                             head.CanCollide = false
                         end
-                    else
+                        local hb = head:FindFirstChild("HitboxBolha")
+                        if hb then hb:Destroy() end -- Remove bolha se existir
+                        
+                    elseif c.HitboxNormal then
+                        -- MODO NORMAL (Bolha invisível de 30x)
                         if head.Size ~= Vector3.new(2, 1, 1) then
                             head.Size = Vector3.new(2, 1, 1)
                             head.Transparency = 0
                             head.CanCollide = true
                         end
+                        if not head:FindFirstChild("HitboxBolha") then
+                            local bolha = Instance.new("Part")
+                            bolha.Name = "HitboxBolha"
+                            bolha.Size = Vector3.new(30, 30, 30)
+                            bolha.Transparency = 1
+                            bolha.CanCollide = false
+                            bolha.CanTouch = false
+                            bolha.CanQuery = true
+                            bolha.Massless = true
+                            bolha.Parent = head
+                            
+                            local weld = Instance.new("WeldConstraint")
+                            weld.Part0 = bolha
+                            weld.Part1 = head
+                            weld.Parent = bolha
+                        end
+                    else
+                        -- DESLIGADO
+                        if head.Size ~= Vector3.new(2, 1, 1) then
+                            head.Size = Vector3.new(2, 1, 1)
+                            head.Transparency = 0
+                            head.CanCollide = true
+                        end
+                        local hb = head:FindFirstChild("HitboxBolha")
+                        if hb then hb:Destroy() end
                     end
                 end
             end
@@ -263,21 +293,30 @@ local function makeBtn(txt, y, key, cb)
         TweenService:Create(b, TweenInfo.new(0.2), {TextColor3 = on and Color3.fromRGB(255,255,255) or Color3.fromRGB(150,150,150)}):Play()
         TweenService:Create(stroke, TweenInfo.new(0.2), {Color = on and Color3.fromRGB(255,0,0) or Color3.fromRGB(60,0,0)}):Play()
         
+        -- Se ligar uma Hitbox, desliga a outra
+        if key == "HitboxNormal" and on then
+            c.HitboxCongelar = false
+            if toggles.HitboxCongelar then toggles.HitboxCongelar.BackgroundColor3 = Color3.fromRGB(20,5,5) end
+        elseif key == "HitboxCongelar" and on then
+            c.HitboxNormal = false
+            if toggles.HitboxNormal then toggles.HitboxNormal.BackgroundColor3 = Color3.fromRGB(20,5,5) end
+        end
+        
         if on then Notify("XIT-INSERIDO 💀", true) else Notify("XIT-REMOVIDO 🩸", false) end
         if cb then cb(on) end
     end)
 end
 
 makeBtn("AIMBOT (TRAVA MIRA)", 10, "Aimbot")
-makeBtn("HITBOX 30X (GIGANTE)", 55, "Hitbox")
-makeBtn("AUTO SHOOT (ATIRAR AUTO)", 100, "AutoShoot")
-makeBtn("ESP (VER INIMIGOS)", 145, "ESP")
-makeBtn("SPEED", 190, "Spd")
-makeBtn("INFINITE JUMP (PULO INF)", 235, "InfJump")
-makeBtn("FLY (VOAR)", 280, "Fly")
-makeBtn("FULLBRIGHT (CLARIDADE)", 325, "Full")
-makeBtn("FPS BOOST (TIRAR LAG)", 370, "FpsBoost")
-makeBtn("NO RECOIL (SEM RECUO)", 415, "NoRecoil")
+makeBtn("HITBOX NORMAL (NAO CONGELA)", 55, "HitboxNormal")
+makeBtn("HITBOX CONGELAR (30X)", 100, "HitboxCongelar")
+makeBtn("AUTO SHOOT (ATIRAR AUTO)", 145, "AutoShoot")
+makeBtn("ESP (VER INIMIGOS)", 190, "ESP")
+makeBtn("SPEED", 235, "Spd")
+makeBtn("INFINITE JUMP (PULO INF)", 280, "InfJump")
+makeBtn("FLY (VOAR)", 325, "Fly")
+makeBtn("FULLBRIGHT (CLARIDADE)", 370, "Full")
+makeBtn("FPS BOOST (TIRAR LAG)", 415, "FpsBoost")
 makeBtn("ANTI-HACK (FANTASMA)", 460, "AntiHack")
 
 bol = Instance.new("TextButton", gui); bol.Size=UDim2.new(0,65,0,65); bol.Position=UDim2.new(0.5, -32, 0, 20); bol.Text="💀"; bol.TextSize=35; bol.Font=Enum.Font.GothamBlack; bol.TextColor3=Color3.fromRGB(255,255,255); bol.Visible=false; bol.BackgroundColor3 = Color3.fromRGB(10, 0, 0)
@@ -294,4 +333,4 @@ top.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch 
 top.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end end)
 U.InputChanged:Connect(function(i) if drag and (i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseMovement) then local d=i.Position-sP; pan.Position=UDim2.new(sPos.X.Scale,sPos.X.Offset+d.X,sPos.Y.Scale,sPos.Y.Offset+d.Y) end end)
 
-print("MICHAELXITADOO v28 CARREGADO COM SUCESSO!")
+print("MICHAELXITADOO v29 CARREGADO COM SUCESSO!")
