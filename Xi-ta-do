@@ -1,4 +1,4 @@
--- PAINEL MACABRO MICHAELXITADOO (LÓGICA v21 - FINAL DEFINITIVO)
+-- PAINEL MACABRO (LÓGICA FINAL v22)
 if getgenv().MontagneriXIT_Cleanup then pcall(getgenv().MontagneriXIT_Cleanup) end
 
 local P = game.Players.LocalPlayer
@@ -9,7 +9,7 @@ local L = game:GetService("Lighting")
 local Cam = W.CurrentCamera
 
 local c = {Aimbot=false, ESP=false, Hitbox=false, Spd=false, Jmp=false, Full=false, AutoShoot=false, InfJump=false, Fly=false, FpsBoost=false, NoRecoil=false, AntiHack=false, FOV=80, Vel=50, JumpPower=100}
-local gui, pan, top, scr, bol, ch, hu, rt, bv, bav
+local gui, pan, top, scr, bol, ch, hu, rt, bv, gyro
 local lpA, lpU
 local espTags = {}
 local toggles = {}
@@ -23,7 +23,7 @@ local function DisableAll()
     uC()
     if hu then hu.WalkSpeed = 16; hu.JumpPower = 50; hu.UseJumpPower = false end
     if bv then bv:Destroy() bv = nil end
-    if bav then bav:Destroy() bav = nil end
+    if gyro then gyro:Destroy() gyro = nil end
     L.Ambient = Color3.fromRGB(70,70,70); L.OutdoorAmbient = Color3.fromRGB(128,128,128); L.GlobalShadows = true
     
     for p, t in pairs(espTags) do
@@ -32,11 +32,13 @@ local function DisableAll()
         espTags[p] = nil
     end
     
-    -- Limpa as Hitboxes
     for _, p in ipairs(game.Players:GetPlayers()) do
         if p.Character then
-            for _, part in ipairs(p.Character:GetDescendants()) do
-                if part.Name == "HitboxBolha" then part:Destroy() end
+            local head = p.Character:FindFirstChild("Head")
+            if head then
+                head.Size = Vector3.new(2, 1, 1)
+                head.Transparency = 0
+                head.CanCollide = true
             end
         end
     end
@@ -117,16 +119,20 @@ lpU = R.Heartbeat:Connect(function()
         if hu.PlatformStand then hu.PlatformStand = false end
     end
 
-    -- ANTI-HACK (Gira o corpo no próprio eixo igual um pião)
+    -- ANTI-HACK: Força o giro do corpo pelo BodyGyro e RenderStepped
     if ch then
         if c.AntiHack then
-            if rt and not bav then
-                bav = Instance.new("BodyAngularVelocity", rt)
-                bav.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-                bav.AngularVelocity = Vector3.new(0, 50, 0) -- Gira muito rápido
+            if rt and not gyro then
+                gyro = Instance.new("BodyGyro", rt)
+                gyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+                gyro.P = 100000
+                gyro.D = 1000
+            end
+            if gyro then
+                gyro.CFrame = CFrame.new(rt.Position) * CFrame.Angles(0, math.rad(tick() * 5000 % 360), 0)
             end
         else
-            if bav then bav:Destroy() bav = nil end
+            if gyro then gyro:Destroy() gyro = nil end
         end
     end
     
@@ -160,29 +166,22 @@ lpU = R.Heartbeat:Connect(function()
                     espTags[p] = nil
                 end
                 
-                -- HITBOX INVISÍVEL (BOLHA)
+                -- HITBOX DIRETA (Aumenta a cabeça original)
                 local head = pCh:FindFirstChild("Head")
                 if head then
                     if c.Hitbox then
-                        if not head:FindFirstChild("HitboxBolha") then
-                            local bolha = Instance.new("Part")
-                            bolha.Name = "HitboxBolha"
-                            bolha.Size = Vector3.new(20, 20, 20)
-                            bolha.Transparency = 1
-                            bolha.CanCollide = false
-                            bolha.CanTouch = false
-                            bolha.CanQuery = true -- CRUCIAL PARA FUNCIONAR
-                            bolha.Massless = true
-                            bolha.Parent = head
-                            
-                            local weld = Instance.new("WeldConstraint")
-                            weld.Part0 = bolha
-                            weld.Part1 = head
-                            weld.Parent = bolha
+                        if head.Size ~= Vector3.new(15, 15, 15) then
+                            head.Size = Vector3.new(15, 15, 15)
+                            head.Transparency = 0.8
+                            head.CanCollide = false
+                            head.CanQuery = true
                         end
                     else
-                        local hb = head:FindFirstChild("HitboxBolha")
-                        if hb then hb:Destroy() end
+                        if head.Size ~= Vector3.new(2, 1, 1) then
+                            head.Size = Vector3.new(2, 1, 1)
+                            head.Transparency = 0
+                            head.CanCollide = true
+                        end
                     end
                 end
             end
@@ -292,4 +291,4 @@ top.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch 
 top.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end end)
 U.InputChanged:Connect(function(i) if drag and (i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseMovement) then local d=i.Position-sP; pan.Position=UDim2.new(sPos.X.Scale,sPos.X.Offset+d.X,sPos.Y.Scale,sPos.Y.Offset+d.Y) end end)
 
-print("MICHAELXITADOO v21 CARREGADO COM SUCESSO!")
+print("MICHAELXITADOO v22 CARREGADO COM SUCESSO!")
