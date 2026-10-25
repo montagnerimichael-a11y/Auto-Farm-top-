@@ -1,4 +1,4 @@
--- PAINEL MACABRO MICHAELXITADOO (LÓGICA v14 - UNIVERSAL FIX)
+-- PAINEL MACABRO MICHAELXITADOO (LÓGICA FINAL v15 - ANTI-HACK)
 if getgenv().MontagneriXIT_Cleanup then pcall(getgenv().MontagneriXIT_Cleanup) end
 
 local P = game.Players.LocalPlayer
@@ -8,11 +8,12 @@ local W = game:GetService("Workspace")
 local L = game:GetService("Lighting")
 local Cam = W.CurrentCamera
 
-local c = {Aimbot=false, ESP=false, Hitbox=false, Spd=false, Jmp=false, Full=false, AutoShoot=false, InfJump=false, Fly=false, FpsBoost=false, NoRecoil=false, FOV=80, Vel=50, JumpPower=100}
+local c = {Aimbot=false, ESP=false, Hitbox=false, Spd=false, Jmp=false, Full=false, AutoShoot=false, InfJump=false, Fly=false, FpsBoost=false, NoRecoil=false, AntiHack=false, FOV=80, Vel=50, JumpPower=100}
 local gui, pan, top, scr, bol, ch, hu, rt, bv
-local lpA, lpU
+local lpA, lpU, lpHack
 local espTags = {}
 local toggles = {}
+local originalHeadSize = Vector3.new(2, 1, 1)
 
 local FF = {Bg=Color3.fromRGB(10, 0, 0), Top=Color3.fromRGB(30, 0, 0), Neon=Color3.fromRGB(255,0,0), Text=Color3.fromRGB(255,255,255), Btn=Color3.fromRGB(20, 5, 5), On=Color3.fromRGB(150,0,0), Off=Color3.fromRGB(20,5,5)}
 
@@ -35,11 +36,16 @@ local function DisableAll()
         if p ~= P and p.Character then
             local head = p.Character:FindFirstChild("Head")
             local hrp = p.Character:FindFirstChild("HumanoidRootPart")
-            if head then head.Size = Vector3.new(2, 1, 1); head.Transparency = 0; head.CanCollide = true end
+            if head then head.Size = originalHeadSize; head.Transparency = 0; head.CanCollide = true end
             if hrp then hrp.Size = Vector3.new(2, 2, 1); hrp.Transparency = 1; hrp.CanCollide = true end
         end
     end
     
+    if ch then
+        local myHead = ch:FindFirstChild("Head")
+        if myHead then myHead.Size = originalHeadSize end
+    end
+
     for key, btn in pairs(toggles) do
         c[key] = false
         btn.BackgroundColor3 = FF.Off
@@ -83,10 +89,33 @@ lpA = R.RenderStepped:Connect(function()
             Cam.CFrame = CFrame.new(Cam.CFrame.Position, target.Position)
             if c.AutoShoot and ch then
                 local tool = ch:FindFirstChildOfClass("Tool")
-                if tool then
-                    pcall(function() tool:Activate() end)
-                end
+                if tool then pcall(function() tool:Activate() end) end
             end
+        end
+    end
+end)
+
+-- LÓGICA ANTI-HACK
+if lpHack then lpHack:Disconnect() end
+lpHack = R.Heartbeat:Connect(function(dt)
+    uC()
+    if not ch then return end
+    
+    if c.AntiHack then
+        -- Anti-Aim (Gira a cabeça do jogador para os Aimbots errarem)
+        local head = ch:FindFirstChild("Head")
+        if head then
+            local spin = (tick() * 20) % 360
+            head.CFrame = head.CFrame * CFrame.Angles(0, math.rad(spin), 0)
+        end
+        -- Diminui a Hitbox do jogador
+        local hrp = ch:FindFirstChild("HumanoidRootPart")
+        if head then head.Size = Vector3.new(1.2, 0.8, 0.8) end
+        if hrp then hrp.Size = Vector3.new(1, 1, 1) end
+    else
+        if ch then
+            local head = ch:FindFirstChild("Head")
+            if head and head.Size ~= originalHeadSize then head.Size = originalHeadSize end
         end
     end
 end)
@@ -189,8 +218,8 @@ lpU = R.Heartbeat:Connect(function()
                             hrp.CanCollide = false
                         end
                     else
-                        if head.Size ~= Vector3.new(2, 1, 1) then
-                            head.Size = Vector3.new(2, 1, 1)
+                        if head.Size ~= originalHeadSize then
+                            head.Size = originalHeadSize
                             head.Transparency = 0
                             head.CanCollide = true
                         end
@@ -205,7 +234,7 @@ lpU = R.Heartbeat:Connect(function()
         end
     end
 end)
--- INTERFACE MACABRA + CARREGAMENTO DE SANGUE
+-- INTERFACE MACABRA + CARREGAMENTO
 local TweenService = game:GetService("TweenService")
 
 -- TELA DE CARREGAMENTO
@@ -262,7 +291,7 @@ close.MouseButton1Click:Connect(function() DisableAll() gui:Destroy() end)
 local minBtn = Instance.new("TextButton", top); minBtn.Size=UDim2.new(0,25,0,25); minBtn.Position=UDim2.new(1,-62,0.5,-12); minBtn.Text="-"; minBtn.BackgroundColor3=Color3.fromRGB(20,0,0); minBtn.TextColor3=Color3.fromRGB(255,0,0); minBtn.Font=Enum.Font.GothamBold; minBtn.ZIndex = 3; Instance.new("UICorner",minBtn).CornerRadius=UDim.new(0,5)
 minBtn.MouseButton1Click:Connect(function() pan.Visible=false; bol.Visible=true end)
 
-scr=Instance.new("ScrollingFrame", pan); scr.Size=UDim2.new(1,-12,1,-70); scr.Position=UDim2.new(0,6,0,60); scr.BackgroundTransparency=1; scr.BorderSizePixel=0; scr.ScrollBarThickness=3; scr.ScrollBarImageColor3=Color3.fromRGB(255,0,0); scr.CanvasSize=UDim2.new(0,0,0,600); scr.ZIndex = 2
+scr=Instance.new("ScrollingFrame", pan); scr.Size=UDim2.new(1,-12,1,-70); scr.Position=UDim2.new(0,6,0,60); scr.BackgroundTransparency=1; scr.BorderSizePixel=0; scr.ScrollBarThickness=3; scr.ScrollBarImageColor3=Color3.fromRGB(255,0,0); scr.CanvasSize=UDim2.new(0,0,0,650); scr.ZIndex = 2
 
 local function makeBtn(txt, y, key, cb)
     local b = Instance.new("TextButton", scr); b.Size=UDim2.new(0.9,0,0,35); b.Position=UDim2.new(0.05,0,0,y); b.Text=txt; b.BackgroundColor3=Color3.fromRGB(20, 5, 5); b.TextColor3=Color3.fromRGB(150,150,150); b.Font=Enum.Font.GothamBlack; b.TextSize=13; b.TextXAlignment=Enum.TextXAlignment.Left; b.ZIndex = 3
@@ -291,6 +320,7 @@ makeBtn("FLY (VOAR)", 280, "Fly")
 makeBtn("FULLBRIGHT (CLARIDADE)", 325, "Full")
 makeBtn("FPS BOOST (TIRAR LAG)", 370, "FpsBoost")
 makeBtn("NO RECOIL (SEM RECUO)", 415, "NoRecoil")
+makeBtn("ANTI-HACK (FANTASMA)", 460, "AntiHack")
 
 bol = Instance.new("TextButton", gui); bol.Size=UDim2.new(0,65,0,65); bol.Position=UDim2.new(0.5, -32, 0, 20); bol.Text="💀"; bol.TextSize=35; bol.Font=Enum.Font.GothamBlack; bol.TextColor3=Color3.fromRGB(255,255,255); bol.Visible=false; bol.BackgroundColor3 = Color3.fromRGB(10, 0, 0)
 Instance.new("UICorner",bol).CornerRadius=UDim.new(1,0)
@@ -306,4 +336,4 @@ top.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch 
 top.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end end)
 U.InputChanged:Connect(function(i) if drag and (i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseMovement) then local d=i.Position-sP; pan.Position=UDim2.new(sPos.X.Scale,sPos.X.Offset+d.X,sPos.Y.Scale,sPos.Y.Offset+d.Y) end end)
 
-print("MICHAELXITADOO UNIVERSAL CARREGADO!")
+print("MICHAELXITADOO v15 CARREGADO COM SUCESSO!")
