@@ -1,4 +1,4 @@
--- PAINEL UNIVERSAL MACABRO (LÓGICA v13)
+-- PAINEL MACABRO MICHAELXITADOO (LÓGICA v14 - UNIVERSAL FIX)
 if getgenv().MontagneriXIT_Cleanup then pcall(getgenv().MontagneriXIT_Cleanup) end
 
 local P = game.Players.LocalPlayer
@@ -7,9 +7,8 @@ local R = game:GetService("RunService")
 local W = game:GetService("Workspace")
 local L = game:GetService("Lighting")
 local Cam = W.CurrentCamera
-local VIM = game:GetService("VirtualInputManager")
 
-local c = {Aimbot=false, ESP=false, Hitbox=false, Spd=false, Jmp=false, Full=false, AutoShoot=false, InfJump=false, Fly=false, FpsBoost=false, NoRecoil=false, FOV=150, Vel=50, JumpPower=100}
+local c = {Aimbot=false, ESP=false, Hitbox=false, Spd=false, Jmp=false, Full=false, AutoShoot=false, InfJump=false, Fly=false, FpsBoost=false, NoRecoil=false, FOV=80, Vel=50, JumpPower=100}
 local gui, pan, top, scr, bol, ch, hu, rt, bv
 local lpA, lpU
 local espTags = {}
@@ -81,16 +80,12 @@ lpA = R.RenderStepped:Connect(function()
     if c.Aimbot then
         local target = getClosest()
         if target then
-            -- Aimbot suave (não trava seu boneco)
-            local targetCFrame = CFrame.new(Cam.CFrame.Position, target.Position)
-            Cam.CFrame = Cam.CFrame:Lerp(targetCFrame, 0.2)
-            
-            if c.AutoShoot then
-                pcall(function() 
-                    VIM:SendMouseButtonEvent(Cam.ViewportSize.X/2, Cam.ViewportSize.Y/2, 0, true, game, 1) 
-                    task.wait(0.05)
-                    VIM:SendMouseButtonEvent(Cam.ViewportSize.X/2, Cam.ViewportSize.Y/2, 0, false, game, 1)
-                end)
+            Cam.CFrame = CFrame.new(Cam.CFrame.Position, target.Position)
+            if c.AutoShoot and ch then
+                local tool = ch:FindFirstChildOfClass("Tool")
+                if tool then
+                    pcall(function() tool:Activate() end)
+                end
             end
         end
     end
